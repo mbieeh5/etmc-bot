@@ -1,15 +1,16 @@
 {
-  "name": "wa-connect",
-  "version": "1.0.0",
-  "description": "",
+  "name": "etmc-whatsapp-bot",
+  "version": "2.0.475",
+  "description": "whatsapp bot, play games and colect the point",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "rraf": "node index.js"
   },
-  "author": "",
+  "author": "rraf",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.4.0",
+    "dotenv": "^16.0.3",
     "firebase": "^9.22.0",
     "firebase-admin": "^11.8.0",
     "qrcode-terminal": "^0.12.0",

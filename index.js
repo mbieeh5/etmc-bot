@@ -1,28 +1,41 @@
-const { Client, MessageMedia, LocalAuth  } = require('whatsapp-web.js');
+const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const admin = require('firebase-admin');
 const axios = require('axios');
 const serviceAccount = require('./etmc-whatsapp-bot.json');
+require('dotenv').config();
+
 const client = new Client({
     authStrategy: new LocalAuth()
-});
-
+  });
 client.on('qr', qr => {
     qrcode.generate(qr, {small: true});
-});
+  });
 
 client.on('ready', () => {
     console.log('Client is ready!');
-});
+  });
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://etmc-whatsapp-bot-default-rtdb.asia-southeast1.firebasedatabase.app'
-});
+    databaseURL: process.env.DATABASE_URL
+  }); 
 const db = admin.database();
-const refCht = db.ref('dataPengguna/Dbcht');
 const pointRef = db.ref('dataPengguna/pengguna')
+const linkRef = db.ref('dataData/link')
+const DataRef = db.ref('dataData/command')
+const DataMRef = db.ref('dataData/mabar')
 const point = {};
+const reputasi = {};
+const thresholds = [0, 100 ,200, 500, 1000, 5000, 10000, 20000, 500000, 1000000, 1000000000];
+const regexCari = /^!cari\s(.+)/;
+const regexKirim = /^!kirim\s(.+)/;
+const regexTogel = /^!togel\s(\d{4})/;
+const regexRibut = /^!ribut\s(.+)/;
+const regexNama = /^!nama\s(.+)/;
+const regexInfo = /^!info\s(.+)/;
+const regexCommand = /^!addcommand\s(.+)/;
+const regexMabar = /^!mabar\s(.+)/;
 
 client.on('message', async (message) => {
     const sA = message.author;
@@ -30,1028 +43,88 @@ client.on('message', async (message) => {
     const corection = sA != undefined ? sA : sender;
     const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
     const pesan = message.body.toLocaleLowerCase();
-    const kataKasar =[
-        'kontol',
-        'kuntul',
-        'kintil',
-        'itil',
-        'kntl',
-        'blog',
-        'gblk',
-        'goblog',
-        'goblok',
-        'anjg',
-        'anj',
-        'anjing',
-        'bajingan',
-        'ngentot',
-        'jingan',
-        'jing',
-        'ngntot',
-        'anjir',
-        'kimak',
-        'puki',
-        'meki',
-        'pantek',
-        'memek',
-        'mmk',
-        'bangsat',
-        'bgst',
-        'pler',
-        'dito',
-        '3gp',
-        '3some',
-        '4some',
-        '*damn',
-        '*dyke',
-        '*fuck*',
-        '*shit*',
-        '@$$',
-        'adult',
-        'ahole',
-        'akka',
-        'amcik',
-        'anal-play',
-        'analingus',
-        'analplay',
-        'androsodomy',
-        'andskota',
-        'anilingus',
-        'anjing',
-        'anjrit',
-        'anjrot',
-        'anus',
-        'arschloch',
-        'arse',
-        'arse*',
-        'arsehole',
-        'ash0le',
-        'ash0les',
-        'asholes',
-        'ass monkey',
-        'ass-playauto-eroticism',
-        'asses',
-        'assface',
-        'assh0le',
-        'assh0lez',
-        'asshole',
-        'asshole',
-        'assholes',
-        'assholz',
-        'asslick',
-        'assplay',
-        'assrammer',
-        'asswipe',
-        'ashu',
-        'washu',
-        'wasu',
-        'wasuh',
-        'autofellatio',
-        'autopederasty',
-        'ayir',
-        'azzhole',
-        'badass',
-        'b00b',
-        'b00b*',
-        'b00bs',
-        'b1tch',
-        'b17ch',
-        'b!+ch',
-        'b!tch',
-        'babami',
-        'babes',
-        'bego',
-        'babi',
-        'bagudung',
-        'bajingan',
-        'ball-gag',
-        'ballgag',
-        'banci',
-        'bangla',
-        'bangsat',
-        'bareback',
-        'barebacking',
-        'bassterds',
-        'bastard',
-        'bastards',
-        'bastardz',
-        'basterds',
-        'basterdz',
-        'bacot',
-        'bloon',
-        'bdsm',
-        'beastilaity',
-        'bejad',
-        'bejat',
-        'bencong',
-        'bestiality',
-        'bi7ch',
-        'bi+ch',
-        'biatch',
-        'bikini',
-        'birahi',
-        'bitch',
-        'bitch',
-        'bitch*',
-        'bitches',
-        'blow job',
-        'blow-job',
-        'blowjob',
-        'blowjob',
-        'blowjobs',
-        'bodat',
-        'boffing',
-        'bogel',
-        'boiolas',
-        'bokep',
-        'bollock',
-        'bollock*',
-        'bondage',
-        'boner',
-        'boob',
-        'boobies',
-        'boobs',
-        'borjong',
-        'breas',
-        'breasts',
-        'brengsek',
-        'buceta',
-        'bugger',
-        'buggery',
-        'bugil',
-        'bukake',
-        'bukakke',
-        'bull-dyke',
-        'bull-dykes',
-        'bulldyke',
-        'bulldykes',
-        'bungul',
-        'burit',
-        'butt',
-        'butt-pirate',
-        'butt-plug',
-        'butt-plugs',
-        'butthole',
-        'buttplug',
-        'buttplugs',
-        'butts',
-        'buttwipe',
-        'c0ck',
-        'c0cks',
-        'c0k',
-        'cabron',
-        'cameltoe',
-        'cameltoes',
-        'carpet muncher',
-        'cawk',
-        'cawks',
-        'cazzo',
-        'cerita dewasa',
-        'cerita hot',
-        'cerita panas',
-        'cerita seru',
-        'chick',
-        'chicks',
-        'chink',
-        'choda',
-        'chraa',
-        'chudai',
-        'chuj',
-        'cipa',
-        'cipki',
-        'clit',
-        'clit',
-        'clitoris',
-        'clits',
-        'cnts',
-        'cntz',
-        'cock',
-        'cock*',
-        'cock-head',
-        'cock-sucker',
-        'cockhead',
-        'cocks',
-        'cocksucker',
-        'coli',
-        'coprophagy',
-        'coprophilia',
-        'cornhole',
-        'cornholes',
-        'corpophilia',
-        'corpophilic',
-        'crack',
-        'crackz',
-        'crap',
-        'cream-pie',
-        'creampie',
-        'creamypie',
-        'cum',
-        'cumming',
-        'cumpic',
-        'cumshot',
-        'cumshots',
-        'cunilingus',
-        'cunnilingus',
-        'cunt',
-        'cunt*',
-        'cunts',
-        'cuntz',
-        'cukimay',
-        'cukimai',
-        'd4mn',
-        'damn',
-        'dancuk',
-        'daniel brou',
-        'david neil wallace',
-        'daygo',
-        'deepthroat',
-        'defecated',
-        'defecating',
-        'defecation',
-        'dego',
-        'desnuda',
-        'dick',
-        'dick',
-        'dick*',
-        'dicks',
-        'dike',
-        'dike*',
-        'dild0',
-        'dild0s',
-        'dildo',
-        'dildoes',
-        'dildos',
-        'dilld0',
-        'dilld0s',
-        'dirsa',
-        'dnwallace',
-        'doggystyle',
-        'dominatricks',
-        'dominatrics',
-        'dominatrix',
-        'douche',
-        'douches',
-        'douching',
-        'dupa',
-        'dyke',
-        'dykes',
-        'dziwka',
-        'ejackulate',
-        'ejakulate',
-        'ekrem',
-        'ekrem*',
-        'ekto',
-        'ekto',
-        'enculer',
-        'enema',
-        'enemas',
-        'erection',
-        'erections',
-        'erotic',
-        'erotica',
-        'f u c k',
-        'f u c k e r',
-        'facesit',
-        'facesitting',
-        'facial',
-        'facials',
-        'faen',
-        'fag',
-        'fag1t',
-        'fag*',
-        'faget',
-        'fagg0t',
-        'fagg1t',
-        'faggit',
-        'faggot',
-        'fagit',
-        'fags',
-        'fagz',
-        'faig',
-        'faigs',
-        'fanculo',
-        'fanny',
-        'fart',
-        'farted',
-        'farting',
-        'fatass',
-        'fcuk',
-        'feces',
-        'feg',
-        'felch',
-        'felcher',
-        'felcher',
-        'felching',
-        'fellatio',
-        'fetish',
-        'fetishes',
-        'ficken',
-        'fisting',
-        'fitt*',
-        'flikker',
-        'flikker',
-        'flipping the bird',
-        'footjob',
-        'foreskin',
-        'fotze',
-        'fotze',
-        'foursome',
-        'fu(*',
-        'fuck',
-        'fuck',
-        'fucker',
-        'fuckin',
-        'fucking',
-        'fucking',
-        'fucks',
-        'fudge packer',
-        'fuk',
-        'fuk*',
-        'fukah',
-        'fuken',
-        'fuker',
-        'fukin',
-        'fukk',
-        'fukkah',
-        'fukken',
-        'fukker',
-        'fukkin',
-        'futkretzn',
-        'fux0r',
-        'g00k',
-        'g-spot',
-        'gag',
-        'gang-bang',
-        'gangbang',
-        'gay',
-        'gayboy',
-        'gaygirl',
-        'gays',
-        'gayz',
-        'gembel',
-        'genital',
-        'genitalia',
-        'genitals',
-        'gila',
-        'gigolo',
-        'goblok',
-        'girl',
-        'glory-hole',
-        'glory-holes',
-        'gloryhole',
-        'gloryholes',
-        'god-damned',
-        'gook',
-        'groupsex',
-        'gspot',
-        'guiena',
-        'h0ar',
-        'h0r',
-        'h0re',
-        'h00r',
-        'h4x0r',
-        'hand-job',
-        'handjob',
-        'hardcore',
-        'hate',
-        'heang',
-        'hell',
-        'hells',
-        'helvete',
-        'hencet',
-        'henceut',
-        'hentai',
-        'hitler',
-        'hoar',
-        'hoer',
-        'hoer*',
-        'homosexual',
-        'honkey',
-        'hoor',
-        'hoore',
-        'hore',
-        'horny',
-        'hot girl',
-        'hot video',
-        'hubungan intim',
-        'huevon',
-        'huevon',
-        'hui',
-        'idiot',
-        'incest',
-        'injun',
-        'intercourse',
-        'interracial',
-        'itil',
-        'jablay',
-        'jablai',
-        'jackass',
-        'jackoff',
-        'jancuk',
-        'jancok',
-        'j4ncok',
-        'jap',
-        'japs',
-        'jebanje',
-        'jembut',
-        'jerk-off',
-        'jisim',
-        'jism',
-        'jiss',
-        'jizm',
-        'jizz',
-        'joanne yiokaris',
-        'kacuk',
-        'kampang',
-        'kampret',
-        'kanciang',
-        'kanjut',
-        'kancut',
-        'kanker*',
-        'kankerkinky',
-        'kawk',
-        'kelamin',
-        'kelentit',
-        'keparat',
-        'kike',
-        'kimak',
-        'klimak',
-        'klimax',
-        'klitoris',
-        'klootzak',
-        'knob',
-        'knobs',
-        'knobz',
-        'knulle',
-        'kolop',
-        'kontol',
-        'kontol',
-        'kraut',
-        'kripalu',
-        'kuk',
-        'kuksuger',
-        'kunt',
-        'kunts',
-        'kuntz',
-        'kunyuk',
-        'kurac',
-        'kurac',
-        'kurwa',
-        'kusi',
-        'kusi*',
-        'kyrpa',
-        'kyrpa*',
-        'l3i+ch',
-        'l3itch',
-        'labia',
-        'labial',
-        'lancap',
-        'lau xanh',
-        'lesbi',
-        'lesbian',
-        'lesbians',
-        'lesbo',
-        'lezzian',
-        'lipshits',
-        'lipshitz',
-        'lolita',
-        'lolitas',
-        'lonte',
-        'lucah',
-        'maho',
-        'matamu',
-        'malam pengantin',
-        'malam pertama',
-        'mamhoon',
-        'maria ozawa',
-        'masochism',
-        'masochist',
-        'masochistic',
-        'masokist',
-        'massterbait',
-        'masstrbait',
-        'masstrbate',
-        'masterbaiter',
-        'masterbat3',
-        'masterbat*',
-        'masterbate',
-        'masterbates',
-        'masturbat',
-        'masturbat*',
-        'masturbate',
-        'masturbation',
-        'memek',
-        'memek',
-        'merd*',
-        'mesum',
-        'mibun',
-        'mofo',
-        'monkleigh',
-        'motha fucker',
-        'motha fuker',
-        'motha fukkah',
-        'motha fukker',
-        'mother fucker',
-        'mother fukah',
-        'mother fuker',
-        'mother fukkah',
-        'mother fukker',
-        'mother-fucker',
-        'motherfisher',
-        'motherfucker',
-        'mouliewop',
-        'muff',
-        'muie',
-        'mujeres',
-        'mulkku',
-        'muschi',
-        'mutha fucker',
-        'mutha fukah',
-        'mutha fuker',
-        'mutha fukkah',
-        'mutha fukker',
-        'n1gr',
-        'naked',
-        'nastt',
-        'nazi',
-        'nazis',
-        'necrophilia',
-        'nenen',
-        'nepesaurio',
-        'ngecrot',
-        'ngegay',
-        'ngentot',
-        'ngentot',
-        'ngewe',
-        'ngocok',
-        'ngulum',
-        'nigga',
-        'nigger',
-        'nigger*',
-        'nigger;',
-        'niggers',
-        'nigur;',
-        'niiger;',
-        'niigr;',
-        'nipple',
-        'nipples',
-        'no cd',
-        'nocd',
-        'nude',
-        'nudes',
-        'nudity',
-        'nutsack',
-        'nympho',
-        'nymphomania',
-        'nymphomaniac',
-        'orafis',
-        'orgasim;',
-        'orgasm',
-        'orgasms',
-        'orgasum',
-        'orgies',
-        'orgy',
-        'oriface',
-        'orifice',
-        'orifiss',
-        'orospu',
-        'p0rn',
-        'packi',
-        'packie',
-        'packy',
-        'paki',
-        'pakie',
-        'paky',
-        'pantat',
-        'pantek',
-        'paska',
-        'paska*',
-        'pecker',
-        'pecun',
-        'pederast',
-        'pederasty',
-        'pedophilia',
-        'pedophiliac',
-        'pee',
-        'peeenus',
-        'peeenusss',
-        'peeing',
-        'peenus',
-        'peinus',
-        'pemerkosaan',
-        'pen1s',
-        'penas',
-        'penetration',
-        'penetrations',
-        'penis',
-        'penis',
-        'penis-breath',
-        'pentil',
-        'penus',
-        'penuus',
-        'pepek',
-        'perek',
-        'perse',
-        'pervert',
-        'perverted',
-        'perverts',
-        'pg ishazamuddin',
-        'phuc',
-        'phuck',
-        'phuck',
-        'phuk',
-        'phuker',
-        'phukker',
-        'picka',
-        'pierdol',
-        'pierdol*',
-        'pilat',
-        'pillu',
-        'pillu*',
-        'pimmel',
-        'pimpis',
-        'piss',
-        'piss*',
-        'pizda',
-        'polac',
-        'polack',
-        'polak',
-        'poonani',
-        'poontsee',
-        'poop',
-        'porn',
-        'pr0n',
-        'pr1c',
-        'pr1ck',
-        'pr1k',
-        'precum',
-        'preteen',
-        'prick',
-        'pricks',
-        'prostitute',
-        'prostituted',
-        'prostitutes',
-        'prostituting',
-        'puki',
-        'pukimak',
-        'pula',
-        'pule',
-        'pusse',
-        'pussee',
-        'pussies',
-        'pussy',
-        'pussy',
-        'pussylips',
-        'pussys',
-        'puta',
-        'puto',
-        'puuke',
-        'puuker',
-        'qahbeh',
-        'queef',
-        'queef*',
-        'queer',
-        'queers',
-        'queerz',
-        'qweef',
-        'qweers',
-        'qweerz',
-        'qweir',
-        'racist',
-        'rape',
-        'raped',
-        'rapes',
-        'rapist',
-        'rautenberg',
-        'recktum',
-        'rectum',
-        'retard',
-        'rimjob',
-        's.o.b.',
-        'sabul',
-        'sadism',
-        'sadist',
-        'sarap',
-        'scank',
-        'scat',
-        'schaffer',
-        'scheiss',
-        'scheiss*',
-        'schlampe',
-        'schlong',
-        'schmuck',
-        'school',
-        'screw',
-        'screwing',
-        'scrotum',
-        'sekolah menengah shan tao',
-        'seks',
-        'semen',
-        'sempak',
-        'senggama',
-        'sepong',
-        'setan',
-        'setubuh',
-        'sex',
-        'sexy',
-        'sh1t',
-        'sh1ter',
-        'sh1ts',
-        'sh1tter',
-        'sh1tz',
-        'sh!+',
-        'sh!t',
-        'sh!t',
-        'sh!t*',
-        'sharmuta',
-        'sharmute',
-        'shemale',
-        'shi+',
-        'shipal',
-        'shit',
-        'shits',
-        'shitter',
-        'shitty',
-        'shity',
-        'shitz',
-        'shiz',
-        'shyt',
-        'shyte',
-        'shytty',
-        'shyty',
-        'silit',
-        'sinting',
-        'sixty-nine',
-        'sixtynine',
-        'skanck',
-        'skank',
-        'skankee',
-        'skankey',
-        'skanks',
-        'skanky',
-        'skribz',
-        'skurwysyn',
-        'slag',
-        'slut',
-        'sluts',
-        'slutty',
-        'slutty',
-        'slutz',
-        'smut',
-        'sodomi',
-        'sodomize',
-        'sodomy',
-        'softcore',
-        'son-of-a-bitch',
-        'spank',
-        'spanked',
-        'spanking',
-        'sperm',
-        'sphencter',
-        'spic',
-        'spierdalaj',
-        'splooge',
-        'squirt',
-        'squirted',
-        'squirting',
-        'strap-on',
-        'strapon',
-        'submissive',
-        'suck',
-        'suck-off',
-        'sucked',
-        'sucking',
-        'sucks',
-        'suicide',
-        'suka',
-        'taek',
-        'tanpa busana',
-        'taptei',
-        'teets',
-        'teez',
-        'teho',
-        'telanjang',
-        'testical',
-        'testicle',
-        'testicle*',
-        'testicles',
-        'tetek',
-        'tetek',
-        'threesome',
-        'tit',
-        'titit',
-        'tits',
-        'titt',
-        'titt*',
-        'titties',
-        'titty',
-        'tittys',
-        'toket',
-        'tolol',
-        'topless',
-        'totong',
-        'tranny',
-        'transsexual',
-        'transvestite',
-        'tukar istri',
-        'tukar pasangan',
-        'turd',
-        'tusbol',
-        'twat',
-        'twats',
-        'twaty',
-        'twink',
-        'upskirt',
-        'urinated',
-        'urinating',
-        'urination',
-        'va1jina',
-        'vag1na',
-        'vagiina',
-        'vagina',
-        'vagina',
-        'vaginas',
-        'vaj1na',
-        'vajina',
-        'vibrator',
-        'vittu',
-        'vullva',
-        'vulva',
-        'w0p',
-        'w00se',
-        'wank',
-        'wank*',
-        'wanking',
-        'warez',
-        'watersports',
-        'wetback*',
-        'wh0re',
-        'wh00r',
-        'whoar',
-        'whore',
-        'whores',
-        'wichser',
-        'wop*',
-        'wtf',
-        'x-girl',
-        'x-rated',
-        'xes',
-        'xrated',
-        'xxx',
-        'yed',
-        'zabourah',
-        'bangke',
+    const cocok = pesan.match(regexCari);
+    const match1 = pesan.match(regexKirim);
+    const togel = pesan.match(regexTogel);
+    const ribut = pesan.match(regexRibut);
+    const isiNama = pesan.match(regexNama);
+    const InfoMas = pesan.match(regexInfo);
+    const Mabar = pesan.match(regexMabar);
+    const tambahCommand = pesan.match(regexCommand);
+    const RefNama = pointRef.child(sanitizedSender).child('nama');
+    const RefPoint = pointRef.child(sanitizedSender).child('point');
+    const RefRep = pointRef.child(sanitizedSender).child('reputasi');
     
-    ];  
-    
-    //pesan balasan
-    if(kataKasar.some(kataKasar => pesan.includes(kataKasar))){
-        const rep = [
-            'dih toxic',
-                'heh gaboleh toxic',
-                'ssssttt jangan toxic',
-                'siapa yg ngajarin ngomong gitu',
-                'heh saru',
-                'eitss ngomong apa tadi?',
-                'jangan gitu yaa, banyak anak kecil',
-                'woy jangan aneh-aneh',
-                'cukup sopan dong',
-                'ingat aturan grup, jangan toxic',
-                'tidak ada toleransi untuk bahasa kasar',
-                'tolong jaga bahasa ya',
-                'hati-hati menggunakan kata-kata',
-                'bicara dengan sopan ya',
-                'jaga etika dalam berbicara',
-                'tenang, kita bisa bicara dengan baik',
-                'yuk jaga suasana yang positif',
-                'tidak perlu pake kata-kata kasar',
-                'ada masalah? kita bisa bicarakan dengan baik',
-                'ingat, perkataan kita mencerminkan diri kita',
-                'sopan santun tetap penting',
-                'kita semua butuh saling menghormati',
-                'bicara yang baik akan membangun hubungan yang lebih baik',
-                'ajak diskusi dengan cara yang baik dan sopan',
-                'tolong hindari kata-kata yang merugikan orang lain',
-                'kita bisa saling menghargai pendapat tanpa menggunakan kata kasar',
-                'hindari menghakimi dengan kata-kata yang tidak pantas',
-                'berbicara dengan baik adalah tanda kedewasaan',
-                'ingat, kita berteman dan berinteraksi dengan baik',
-                'bicara yang baik akan memberikan dampak positif',
-                'yuk, kita ciptakan lingkungan yang nyaman untuk berbicara'
-        ];
-        const capitalizedRep = rep.map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1));
-        const reprep = capitalizedRep[Math.floor(Math.random() * capitalizedRep.length)] 
-        message.reply(reprep)
+    // handler nama
+
+    function addMabarData(mabar, nama) {
+      DataMRef.child("1").set({
+        name: nama,
+        desc: mabar
+      });
+    }
+    function generateSN(length){
+        const character = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let sn = '';
+        for(let i = 0; i < length; i++){
+            const randomIndex = Math.floor(Math.random() * character.length);
+            sn += character.charAt(randomIndex);
+        }
+        return sn;
     }
 
+//Pesan Balasan
     if(
         pesan.match(/\bkon\b/i) ||
+        pesan.match(/\bkontol\b/i) ||
+        pesan.match(/\bkntl\b/i) ||
+        pesan.match(/\bkentot\b/i) ||
+        pesan.match(/\bngentot\b/i) ||
+        pesan.match(/\bmek\b/i) ||
         pesan.match(/\btot\b/i) ||
         pesan.match(/\bngen\b/i) ||
         pesan.match(/\bsu\b/i) ||
+        pesan.match(/\banjg\b/i) ||
+        pesan.match(/\bajg\b/i) ||
+        pesan.match(/\bpuki\b/i) ||
+        pesan.match(/\bkimak\b/i) ||
+        pesan.match(/\banjing\b/i) ||
         pesan.match(/\basu\b/i) ||
+        pesan.match(/\bkimak\b/i) ||
         pesan.match(/\bler\b/i) ||
+        pesan.match(/\bpler\b/i) ||
         pesan.match(/\btai\b/i) ||
         pesan.match(/\bcok\b/i) ||
+        pesan.match(/\bmemek\b/i) ||
+        pesan.match(/\bmmk\b/i) ||
+        pesan.match(/\bbajingan\b/i) ||
+        pesan.match(/\bbangsat\b/i) ||
+        pesan.match(/\bsat\b/i) ||
         pesan.match(/\bcuk\b/i) ||
         pesan.match(/\bass\b/i) ||
         pesan.match(/\banal\b/i) ||
-        pesan.match(/\btod\b/i) 
-        ){
-            const rep = [
-                'dih toxic',
-                'heh gaboleh toxic',
-                'ssssttt jangan toxic',
-                'siapa yg ngajarin ngomong gitu',
-                'heh saru',
-                'eitss ngomong apa tadi?',
-                'jangan gitu yaa, banyak anak kecil',
-                'woy jangan aneh-aneh',
-                'cukup sopan dong',
-                'ingat aturan grup, jangan toxic',
-                'tidak ada toleransi untuk bahasa kasar',
-                'tolong jaga bahasa ya',
-                'hati-hati menggunakan kata-kata',
-                'bicara dengan sopan ya',
-                'jaga etika dalam berbicara',
-                'tenang, kita bisa bicara dengan baik',
-                'yuk jaga suasana yang positif',
-                'tidak perlu pake kata-kata kasar',
-                'ada masalah? kita bisa bicarakan dengan baik',
-                'ingat, perkataan kita mencerminkan diri kita',
-                'sopan santun tetap penting',
-                'kita semua butuh saling menghormati',
-                'bicara yang baik akan membangun hubungan yang lebih baik',
-                'ajak diskusi dengan cara yang baik dan sopan',
-                'tolong hindari kata-kata yang merugikan orang lain',
-                'kita bisa saling menghargai pendapat tanpa menggunakan kata kasar',
-                'hindari menghakimi dengan kata-kata yang tidak pantas',
-                'berbicara dengan baik adalah tanda kedewasaan',
-                'ingat, kita berteman dan berinteraksi dengan baik',
-                'bicara yang baik akan memberikan dampak positif',
-                'yuk, kita ciptakan lingkungan yang nyaman untuk berbicara'
-            ];
-            const capitalizedRep = rep.map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1));
-            const reprep = capitalizedRep[Math.floor(Math.random() * capitalizedRep.length)] 
-            message.reply(reprep)
+        pesan.match(/\btod\b/i)){
+        let sisaPo = "";
+        let sisaRe = "";
+        RefPoint.once('value', async (snapshot) => {
+            const poin = snapshot.val() || 0;
+            const pinalty = poin - 5000;
+            await RefPoint.set(pinalty);
+            sisaPo = poin.toLocaleString('id-ID', { minimumFractionDigits: 0 });
+        });
+        RefRep.once('value', async (snapshot) => {
+            const reputasi = snapshot.val() || 0;
+            const pinalty = parseInt(reputasi - 10);
+            await RefRep.set(pinalty)
+            sisaRe = reputasi.toString();
+        });
+        setTimeout(() => {
+            message.reply(`priiiit point -5.000, Reputasi -10.\nsisa point: ${sisaPo}\nReputasi: ${sisaRe}`);
+        }, 1500);
     }
-
-    if(pesan.includes('bacot') || pesan.includes('bct')){
-        message.reply('sssshhh gaboleh gitu')
-            setTimeout(() =>{
-                message.reply('BACOT NIGGA')
-            }, 3500)
-    }
-
-    if(pesan.match(/\bpi\b/i) || pesan.match(/\bfi\b/i) || pesan.match(/\braf\b/i) || pesan.match(/\brap\b/i) || pesan.match(/\brapi\b/i) || pesan.match(/\brafi\b/i)){
-        message.reply("apa? bentar");
-        const rep = [
-            "Si rapi nya lagi sibuk ni",
-            "Si rapi nya lagi ribet yaa",
-            "Tunggu bentar ya, si rapinya gatau kemana",
-            "Si rapi lagi pergi ke pasar",
-            "Si rapi lagi makan siang",
-            "Si rapi lagi tidur",
-            "Si rapi sedang rapat",
-            "Si rapi lagi meeting",
-            "Si rapi sedang nonton film",
-            "Si rapi lagi olahraga",
-            "Si rapi sedang belajar",
-            "Si rapi lagi ngobrol sama teman",
-        ];
-            setTimeout(() =>{
-                const reprep = rep[Math.floor(Math.random() * rep.length)] 
-                message.reply(reprep)
-            }, 2500);
-    }
-
-
-    if(pesan.match(/\boke\b/i) ||
-        pesan.match(/\bok\b/i) ||
-        pesan.match(/\bk\b/i)
-        ){
-        message.reply('Oke Oke doang ngerti ga?');
-    }
-
-    if(pesan.match(/\bmabar\b/i)){    
-        message.reply('mabar apa nich?');
-        const repMbr = [
-            'Wait',
-            'Bentar atuh',
-            'Belom install',
-        ]
-                setTimeout(() => {
-                    const repMabar = repMbr[Math.floor(Math.random() * repMbr.length)] 
-                    message.reply(repMabar)
-                }, 3000)
-            
-    }
-
 
     //Command
-
-    
-    if (pesan === '!bot') {
+    if (pesan === '!bot'){
         const commands = [
           { p: '!help', label: 'Bantuan' },
           { p: '!rules', label: 'Aturan' },
@@ -1059,9 +132,15 @@ client.on('message', async (message) => {
           { p: '!cuaca', label: 'Info Cuaca' },
           { p: '!doa', label: 'Doa Harian' },
           { p: '!quotes', label: 'Apa Quotes Untuk mu?' },
-          { p: '!point', label: 'Cek Point' },
-          { p: '!point', label: 'Cek Point' },
-          { p: '!togel', label: 'Main Togel' },
+          { p: '!nama namaKalian', label: 'isi namamu di grub ini!' },
+          { p: '!rate', label: 'Cek Rate 1USD = Rp xx.xxx' },
+          { p: '!info cuaca/mabar', label: 'Cek info cuaca dan info mabar' },
+          { p: '!stat', label: 'Cek Point, Reputasi & status' },
+          { p: '!mabar "game apa, jam berapa, kapan"', label: 'Tambah info mabar' },
+          { p: '!ribut @...', label: 'Kalo ada masalah ributnya pake ini ya' },
+          { p: '!kirim @... 12345', label: 'Kirim Point ke Teman' },
+          { p: '!togel 1234', label: 'Main Togel' },
+          { p: '!pap', label: 'ngirim pap jahat' },
           { p: '!slot', label: 'Main Slot' }
         ];
         
@@ -1072,18 +151,15 @@ client.on('message', async (message) => {
         });
         
         menuText += '\nBaru ada Command Ini Doang ni';
-        message.reply(menuText);
+        client.sendMessage(message.from, menuText);
     }
-    
     if(pesan === '!help'){
-        message.reply('!togel = main togel kalo JP dapet 5000 Point tapi lu bayar 1.000 Point\n!slot = main slot kalo JP dapet 5000 tapi lu bayar 500\n!berita = info berita terkini dari CNN, di pick secara random\n\nMADE by : ETMC \nMAINTENANCE by: W0lV')
+        client.sendMessage(message.from,'!togel = main togel kalo JP dapet 50.000 Point tapi lu bayar 1.000 Point\n cara main togel tinggal gini ni "!togel 1234"\n!slot = main slot kalo JP dapet 5000 tapi lu bayar 500\n!berita = info berita terkini dari CNN, di pick secara random\n!kirim = kirim point ke grup caranya\n!kirim @.... 1000 \n\nMADE by : ETMC \nMAINTENANCE by: W0lV')
     }
-    
     if(pesan === '!rules'){
-        message.reply(`Toxic! \nSara \nBoleh main slot \naturan dibuat untuk di langgar`)
+        client.sendMessage(message.from,`Aturan dibuat buat di langgar, makin sering *toxic* *reputasi* lu *ancur*\ncek reputasi !stat.\ngaboleh ngirim link *bokep* di sini kalo mau japri,\nyg mau transaksi silahkan di japri juga\nOke???\n\n*W0lv*`)
     }
-    
-    if (pesan === '!berita') {
+    if (pesan === '!berita'){
         axios.get(`https://api-berita-indonesia.vercel.app/cnn/terbaru/`)
         .then(response => {
             const resp = response.data;
@@ -1098,13 +174,13 @@ client.on('message', async (message) => {
             const month = (date.getUTCMonth() + 1).toString().padStart(2, "0"); // Ditambah 1 karena indeks bulan dimulai dari 0
             const year = date.getUTCFullYear();
             const formattedDate = `${hours}:${minutes}, ${day}/${month}/${year}`;
-            message.reply(`*${randomData.title}* \nTanggal: ${formattedDate}. \n\n${randomData.description} \n\nBacaSelengkapnya : ${randomData.link} `);
+            client.sendMessage(message.from,`*${randomData.title}* \nTanggal: ${formattedDate}. \n\n${randomData.description} \n\nBacaSelengkapnya : ${randomData.link} `);
         })
         .catch(error => {
             console.log(error);
         });
     }
-    if (pesan === '!cuaca') {
+    if (pesan === '!cuaca'){
         axios.get('https://ibnux.github.io/BMKG-importer/cuaca/5002227.json').then(resp => {
           const dataCuaca = resp.data;
           const waktuSekarang = new Date();
@@ -1114,28 +190,117 @@ client.on('message', async (message) => {
           });
           if (dataCuacaTerdekat) {
             const balasan = `Cuaca terdekat:\nJam: ${dataCuacaTerdekat.jamCuaca}\nCuaca: ${dataCuacaTerdekat.cuaca}\nSuhu: ${dataCuacaTerdekat.tempC}°C`;
-            message.reply(balasan);
+            client.sendMessage(message.from, balasan);
         } else {
             const balasan = 'Maaf, tidak ada data cuaca yang tersedia untuk waktu mendatang.';
             message.reply(balasan);
           }
         });
-      }
-    
+    }
     if(pesan === '!doa'){
         axios.get(`https://doa-doa-api-ahmadramadhan.fly.dev/api`).then(resp => {
             const dataDoa = resp.data.slice();
             const randomIndex = Math.floor(Math.random() * dataDoa.length);
             const randomData = dataDoa[randomIndex];
             const balasan = `${randomData.doa}\n\n${randomData.ayat}\n${randomData.latin}\n\nArtinya: ${randomData.artinya}`
-            message.reply(balasan);
+            client.sendMessage(message.from, balasan);
         })
     }
-
-    //search engine
-    const regexCari = /^!cari\s(.+)/;
-    const cocok = pesan.match(regexCari);
-    
+    if(pesan === '!rate'){
+        axios.get(`https://api.freecurrencyapi.com/v1/latest?apikey=${process.env.API_KEY_RATE}&currencies=IDR`).then(resp => {
+            const data2 = resp.data.data.IDR;
+            const dataAkhir = data2.toLocaleString("id-ID",{style: "currency", currency: "IDR"})
+            client.sendMessage(message.from,`Harga $1.00 = ${dataAkhir}`);
+        })
+    }
+    if (pesan === "!quotes"){
+        axios.get("https://kyoko.rei.my.id/api/quotes.php").then((resp) => {
+          const quotes = resp.data.apiResult;
+          if (quotes.length > 0) {
+            const balasan = `'${quotes[0].indo}'\n\n"${quotes[0].character}"`;
+            client.sendMessage(message.from, balasan);
+          } else {
+            message.reply("tidak ada quotes buat lu.");
+          }
+        });
+    }
+    if(pesan === '!hentai'){
+        await axios.get(`https://kyoko.rei.my.id/api/nsfw.php`).then((resp) => {
+            const gambarURL =  resp.data.apiResult.url[0];
+            if(gambarURL.length > 0){
+                    message.reply('sabar yaa, proses ni.')
+                setTimeout(async () => {
+                    await client.sendMessage(message.from, await MessageMedia.fromUrl(gambarURL,[true]));
+                }, 5000);
+            }else{
+                console.log('gagal memuat konten');
+            }
+            }).catch((err) => {
+            console.log(err)
+        })
+    }
+    if (pesan === "!ping") {
+        const pingTimestamp = new Date().getTime();
+            if (pingTimestamp) {
+            const selisihWaktu = new Date().getTime() - pingTimestamp;
+            const selisihWaktuDuaAngkaDepan = (selisihWaktu / 1000).toFixed(2);
+            const balasan = `Pong! : ${selisihWaktuDuaAngkaDepan}ms`;
+              message.reply(`${balasan}`);
+            } else {
+                const balasan = "Pesan 'ping' sebelumnya tidak ditemukan.";
+                message.reply(`${balasan}`);
+            }
+    }
+    if(InfoMas){
+      const parameter = InfoMas[1];
+        if(parameter === "cuaca"){
+          axios.get('https://ibnux.github.io/BMKG-importer/cuaca/5002227.json').then(resp => {
+              const dataCuaca = resp.data;
+              const waktuSekarang = new Date();
+              const dataCuacaTerdekat = dataCuaca.find(data => {
+                const waktuData = new Date(data.jamCuaca);
+                return waktuData > waktuSekarang;
+              });
+              if (dataCuacaTerdekat) {
+                const balasan = `Cuaca terdekat:\nJam: ${dataCuacaTerdekat.jamCuaca}\nCuaca: ${dataCuacaTerdekat.cuaca}\nSuhu: ${dataCuacaTerdekat.tempC}°C`;
+                client.sendMessage(message.from, balasan);
+            } else {
+                const balasan = 'Maaf, tidak ada data cuaca yang tersedia untuk waktu mendatang.';
+                message.reply(balasan);
+              }
+            });
+        }
+        if(parameter === "mabar"){
+          DataMRef.child("1").once('value', async (snapshot) => {
+            const Data = snapshot.val() || {};
+            message.reply(`tuh si ${Data.name} ngajakin mabar ${Data.desc}`);
+          });
+        }
+    }
+//tambah nama
+    if(isiNama){
+      const daftarNama = isiNama[1];
+      RefPoint.once('value', async(snapshot) => {
+        const point = snapshot.val() || 0;
+        const gantiNama = point - 1000;
+          RefNama.once('value', async (snapshot) => {
+            const nama = snapshot.val() || sanitizedSender;
+            if(nama === sanitizedSender){
+              await RefNama.set(daftarNama);
+              message.reply(`Nama berhasil di set: ${daftarNama}`);
+            }else{
+              if(point >= 1000){
+                await RefPoint.set(gantiNama);
+                await RefNama.set(daftarNama);
+                message.reply(`Nama berhasil di ubah: ${daftarNama}`);
+              }else{
+                message.reply(`ubah nama minimal punya 1000Point, point lu ${point}`)
+              }
+            }
+           });
+      });
+    }
+//search engine
     if (cocok) {
       const kataKunci = cocok[1].trim();
       axios.get(`https://id.wikipedia.org/api/rest_v1/page/summary/${kataKunci}`)
@@ -1155,148 +320,164 @@ client.on('message', async (message) => {
         .catch((error) => {
           message.reply('nyari apaan si?');
         });
-    } else {
-      console.log(`err`);
+    }
+//add Mabar
+    if(Mabar){
+  const param1 = Mabar[1];
+  RefNama.once('value', async (snapshot) => {
+    const name = snapshot.val();
+    addMabarData(param1, name);
+  });
     }
 
-
-
-    if (pesan === "!quotes") {
-        axios.get("https://kyoko.rei.my.id/api/quotes.php").then((resp) => {
-          const quotes = resp.data.apiResult;
-          if (quotes.length > 0) {
-            const balasan = `'${quotes[0].indo}'\n\n"${quotes[0].character}"`;
-            message.reply(balasan);
-          } else {
-            message.reply("tidak ada quotes buat lu.");
-          }
-        });
-      }
-      
-      if(pesan === '!hentai'){
-        await axios.get(`https://kyoko.rei.my.id/api/nsfw.php`).then((resp) => {
-            const gambarURL =  resp.data.apiResult.url[0];
-            if(gambarURL.length > 0){
-                    message.reply('sabar yaa, proses ni.')
-                setTimeout(async () => {
-                    client.sendMessage(message.from, await MessageMedia.fromUrl(gambarURL));
-                });
-            }else{
-                console.log('gagal memuat konten');
-            }
-            }).catch((err) => {
-            console.log(err)
-        })
-      }
-    
-    //point system
-    if(!point[corection]){
+//point system
+if(!point[corection]){
         point[corection] = 0;
-    }
-    const thresholds = [0, 100 ,200, 500, 1000, 5000, 10000, 20000, 500000, 1000000, 1000000000];
-    for (const threshold of thresholds) {
+} 
+for (const threshold of thresholds) {
         if (point[corection] >= threshold) {
-            const pointAdded = pointRef.child(sanitizedSender);
-            pointAdded.once('value', (snapshot) => {
-                const poin = snapshot.val() || 0;
-                const newPoint = poin + 100;
-                pointRef.child(sanitizedSender).set(newPoint);
+          const sanitizedSenderF = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+          if(sanitizedSenderF === '628973997575_c_us'){
+
+          }else if(sanitizedSenderF === '6285210306474_c_us'){
+        
+          }else{
+            const pointAdded = pointRef.child(sanitizedSenderF).child('point');
+            pointAdded.once('value', async (snapshot) => {
+              const poin = snapshot.val() || 0;
+              const randomPoint = Math.floor(Math.random() * 30) + 20;
+              const newPoint = parseInt(poin + randomPoint);
+              await pointRef.child(sanitizedSender).child('point').set(newPoint);
             });
+          }
             break;
         }
-    }
-    
-if (pesan === '!point') {
-        const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-        const originalSender = sanitizedSender.replace(/_/g, ".");
-        const poinRef = pointRef.child(sanitizedSender);
-
-        poinRef.once('value', (snapshot) => {
-            const poin = snapshot.val() || 0;
-            const senderName = originalSender;
-            if(senderName === originalSender){
-                message.reply(`Point Kamu Tersisa: ${poin.toLocaleString('id-ID', { minimumFractionDigits: 0 })}`);
-            }else{
-                    message.reply(`err`)
-                }
-        });
 }
-    
-if (pesan === "!ping") {
-    const pingTimestamp = new Date().getTime();
-        
-        if (pingTimestamp) {
-        const selisihWaktu = new Date().getTime() - pingTimestamp;
-        const selisihWaktuDuaAngkaDepan = (selisihWaktu / 1000).toFixed(2);
-        const balasan = `Pong! : ${selisihWaktuDuaAngkaDepan}ms`;
-          message.reply(`${balasan}`);
-        } else {
-            const balasan = "Pesan 'ping' sebelumnya tidak ditemukan.";
-            message.reply(`${balasan}`);
+//Status
+if (pesan === '!stat') {
+    let repu = "";
+    let point = "";
+    let tier = "";
+    let nama = "";
+    //Reputasi
+    RefRep.once('value', async (snapshot) => {
+        const reputasi = snapshot.val() || 0;
+      if(reputasi <= 0){
+        tier = "💀BOCAH TOXIC💀"
+      }else if (reputasi <= 10) {
+        tier = "--_Bronze_--";
+      } else if (reputasi <= 20) {
+        tier = "--_Silver_--";
+      } else if (reputasi <= 30) {
+        tier = "--_Gold_--";
+      } else if (reputasi <= 50) {
+        tier = "--_Platinum_--";
+      } else if (reputasi <= 100) {
+        tier = "--💎_Diamond_💎--";
+      } else if (reputasi <= 200){
+        tier = "--♚_CROWN_♚--";
+      } else if (reputasi <= 500){
+        tier = "--⭐_ACE_⭐--";
+      } else if (reputasi === 666){
+        tier = "S0N-0F-S4TAN"
+      } else if (reputasi <= 1000){
+        tier = "--🔥_CONQUEROR_🔥--";
+      } else if (reputasi >= 1001){
+        tier = "--👑GOD👑--";
+      }else{
+        tier = "Anak💀Haram"
+      }
+      
+      repu = await reputasi.toString();
+    });
+    //point
+    RefPoint.once('value', async (snapshot) => {
+        const poin = snapshot.val() || 0;
+        point = await poin.toLocaleString('id-ID',{minimumFractionDigits: 0});
+    });
+    RefNama.once('value', async (snapshot) => {
+
+    })
+
+    setTimeout(() => {
+        message.reply(`*${tier}*\n\nPoint Kamu: *${point}*\nReputasi: *${repu}*`);
+    },1000)
+}
+// Kirim point
+if (match1) {
+  const parameter = match1[1];
+  const parameterSplit = parameter.split(" ");
+
+  if (parameterSplit.length === 2) {
+    const nomorTujuan = parameterSplit[0];
+    const jumlahPoint = parseInt(parameterSplit[1], 10);
+    const nomortanpa = nomorTujuan.replace(/@/g, "");
+    const nomorLengkap = nomortanpa+"_c_us";
+    const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+    const originalSender = sanitizedSender.replace(/_/g, ".");
+    const sn = generateSN(16);  
+
+    RefPoint.once('value', async (snapshot) => {
+        const poin1 = snapshot.val() || 0;
+        const senderName = originalSender;
+        if(senderName === originalSender){
+            if(poin1 >= jumlahPoint){
+                const iniYangNgirim  = poin1 - jumlahPoint;
+                await message.reply(`Pengiriman Point sejumlah: ${jumlahPoint}, _sedang Dalam Proses_`)
+                await RefPoint.set(iniYangNgirim);
+                    pointRef.child(nomorLengkap).child('point').once('value', async (snapshot) => {
+                        const poin2 = snapshot.val() || 0;
+                        const iniYangNerima = poin2 + jumlahPoint;
+                        await pointRef.child(nomorLengkap).child('point').set(iniYangNerima);
+                    });
+
+                setTimeout(() => {
+                        message.reply(`Pengiriman point ke ${nomorTujuan}, Berhasil. SN:${sn}`)
+                    }, 2000)
+            }else{ 
+                message.reply('point lu ga cukup anjg');
+                setTimeout(() => {
+                  client.sendMessage(message.from,'eh maap toxic');
+                },2000)
+            }
         }
-
-  }
-
-
-
-    //game Togel
-if (pesan === '!togel') {
+    });
+  } else {
+    message.reply("Format pesan tidak sesuai. Harap masukkan nomor tujuan dan jumlah point dengan benar.");
+  } 
+}
+//game Togel
+if (togel) {
         let isPasang = false;
-        const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-        const originalSender = sanitizedSender.replace(/_/g, ".");
-        const poinRef = pointRef.child(sanitizedSender);
-        poinRef.once('value', async (snapshot) => {
+        const masangTogel = togel[1];
+        RefPoint.once('value', async (snapshot) => {
             const poin = snapshot.val() || 0;
-            const senderName = originalSender;
-            if(senderName === originalSender){
-                        if (poin >= 1000) {
-                            message.reply('Mau masang angka berapa?');
-                            const parameter1 = await new Promise((resolve) => {
-                            const timeout = setTimeout(() => {
-                                message.reply('Buru di isi cuk, lama pisannnn');
-                                resolve('');
-                            }, 1000);
-                                client.on('message', (msg) => {
-                                    if (msg.author === corection) {
-                                    clearTimeout(timeout);
-                                    resolve(msg.body);
-                                }
-                            });
-                        });
-                            const parameter = await new Promise((resolve) =>{
-                                client.on('message', (msg) =>{
-                                    if(msg.author === corection){
-                                        resolve(msg.body)
-                                    }
-                                });
-                            });
-
-                            if(parameter && parameter.match(/(\d{4})/)){
-                                isPasang = true;
+                if (poin >= 1000) {
+                              if(masangTogel.match(/(\d{4})/)){
+                                isPasang = true;  
                             }else{
-                                message.reply('Masang 4 Angka dulu boss')
+                                message.reply('ulang boss, pasangnya 4 angka')
                             }
                                 if (isPasang) {
-                                        const angkaTogel = parameter;
+                                        const angkaTogel = masangTogel;
                                         const bayarTogel = poin - 1000;
-                                        pointRef.child(sanitizedSender).set(bayarTogel);
-                                        message.reply(`${sanitizedSender} Berhasil Masang Togel 1000. Angkanya: ${angkaTogel}. Hasil 10 Detik doang`);
+                                        RefPoint.set(bayarTogel);
+                                        message.reply(`Berhasil Masang Angkanya: *${angkaTogel}*.\n\nHasil 10 Detik`);
                                         setTimeout(() => {
                                             const hasil = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
                                             if (hasil === angkaTogel || angkaTogel === '1111') {
                                                 const menangTogel = poin + 50000;
-                                                pointRef.child(sanitizedSender).set(menangTogel);
-                                                message.reply(`Togel ETMC: ${hasil}. Boss Masang: ${angkaTogel}`);
+                                                RefPoint.set(menangTogel);
+                                                message.reply(`*Togel ETMC: ${hasil}*.\n_Boss Masang: ${angkaTogel}_`);
                                                 setTimeout(() => {
                                                     message.reply(`Mantap Boss, dapet JP 50.000.`);
                                                 }, 1000);
                                             } else {
-                                                message.reply(`Togel ETMC: ${hasil}. Togel Boss ${sA}: ${angkaTogel}`);
+                                                message.reply(`*Togel ETMC: ${hasil}*.\n_lu masang: ${angkaTogel}_`);
                                                 setTimeout(() => {
                                                     const repmaaf = [
                                                         'sori boss belom tembus wkwk',
                                                         'maaf ni belom tembus boss',
-                                                        'kurang beruntung boss coba lagi dah pake 1111',
                                                         'maaf ya, belum ada keberuntungan kali ini',
                                                         'mohon maaf, belum berhasil kali ini',
                                                         'maaf boss, belum mendapatkan hasil yang diinginkan',
@@ -1325,14 +506,10 @@ if (pesan === '!togel') {
                         } else {
                             message.reply('Point masih dikit aja, gaya gayaan maen togel cuak');
                         }
-            }else{
-                    message.reply(`err`)
-                }
         });
-    }
-    
-    //gameSlot
-    if (pesan === '!slot') {
+}
+//gameSlot
+if (pesan === '!slot') {
         const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
         const originalSender = sanitizedSender.replace(/_/g, ".");
         const buah = [
@@ -1340,9 +517,7 @@ if (pesan === '!togel') {
             ['🍍', '🍊', '🍋'],
             ['🍉', '🥑', '🍌'],
         ];
-        
-        const poinRef1 = pointRef.child(sanitizedSender);
-        poinRef1.once('value', async (snapshot) => {
+        RefPoint.once('value', async (snapshot) => {
           const poin = snapshot.val() || 0;
           const senderName = originalSender;
           if (senderName === originalSender) {
@@ -1359,7 +534,6 @@ if (pesan === '!togel') {
                     }
                     result.push(row);
                 }
-              
               let replyMessage = '';
               for (let i = 0; i < result.length; i++) {
                   replyMessage += result[i].join(' ') + '\n';
@@ -1371,17 +545,13 @@ if (pesan === '!togel') {
                 if (isWinningCombination(result)) {
                     setTimeout(() =>{
                         const menangSlot = poin + 5000;
-                        poinRef1.set(menangSlot);
-                        console.log(`menangSlot: ${menangSlot}`);
-                        console.log(`sanitizedSender: ${sanitizedSender}`);
+                        RefPoint.set(menangSlot);
                         message.reply('wihh menang 5.000.');
                     }, 2000);
                 } else {
                     setTimeout(() =>{
                         const bayarSlot = poin - 500;
-                        poinRef1.set(bayarSlot);
-                        console.log(`menangSlot: ${bayarSlot}`);
-                        console.log(`sanitizedSender: ${sanitizedSender}`);
+                        RefPoint.set(bayarSlot);
                         message.reply('yahaha kalah blog, coba lagi sampe miskin');
                     }, 2000);
               }
@@ -1394,9 +564,7 @@ if (pesan === '!togel') {
         }).catch((err) =>{
             console.log(err)
         });
-      }
-      
-      function isWinningCombination(result) {
+        function isWinningCombination(result) {
         // Cek baris
         for (let i = 0; i < result.length; i++) {
           if (result[i][0] === result[i][1] && result[i][1] === result[i][2]) {
@@ -1418,15 +586,135 @@ if (pesan === '!togel') {
         if (result[0][2] === result[1][1] && result[1][1] === result[2][0]) {
           return true;
         }
-      
         return false;
       }
+}
+//game Ribut
+if(ribut){
+      let p1 = "";
+      let p2 = "";
+      RefNama.once('value', async (snapshot) => {
+        const nama1 = snapshot.val() || sanitizedSender;
+        if(nama1 === sanitizedSender){
+          p1 = "bocah";
+        }else{
+          p1 = await nama1;
+        }
+      });
+      
+      pointRef.child(ribut[1].replace(/@/g, "")+"_c_us").child('nama').once('value', async (snapshot) => {
+        const nama2 = snapshot.val() || sanitizedSender;
+        if(nama2 === sanitizedSender){
+          p2 = "dia";
+        }else{
+          p2 = await nama2;
+        }
+      });
+      setTimeout(() => {
+        //line1
+        const line1 = [
+          `Mereka kembali terlibat perselisihan, ${p1} melawan ${p2}.`,
+          `Terjadi keributan hebat antara ${p1} dan ${p2}.`,
+          `Konflik sengit pecah di antara ${p1} dan ${p2}.`,
+          `Perang kata-kata meletus antara ${p1} dan ${p2}.`,
+          `Saling serang terjadi antara ${p1} dan ${p2}.`,
+          `Perseteruan tak terelakkan melibatkan ${p1} dan ${p2}.`,
+          `Kembali terjadi bentrok antara ${p1} dan ${p2}.`,
+          `Situasi semakin memanas saat ${p1} berhadapan dengan ${p2}.`,
+          `Terjadi ketegangan tinggi antara ${p1} dan ${p2}.`,
+          `Muncul pertikaian baru antara ${p1} dan ${p2}.`,
+          `Keduanya saling berhadapan dalam pertengkaran sengit, ${p1} melawan ${p2}.`,
+        ];
+        const line1Random = line1[Math.floor(Math.random() * line1.length)];
+        client.sendMessage(message.from, line1Random);
+      },2000);
+      setTimeout(() => {
+        //line2
+        const line2 = [
+          `Anjir, mereka mulai gigit-gigitan!`,
+          `Mereka adu bacot guys, gokil abis!`,
+          `Oooowww, ${p1} meludahi ${p2}!`,
+          `Tiba-tiba, mereka saling cakar-mencakar!`,
+          `Terjadi aksi saling serang di antara mereka!`,
+          `Semakin memanas, mereka bergulat dengan ganas!`,
+          `Bentrokan kata-kata yang mengguncang, tak ada ampun!`,
+          `Saling mencela dan menghina terjadi di antara mereka!`,
+          `Perkelahian hebat dimulai, mereka tak kenal belas kasihan!`,
+          `Emosi memuncak, mereka saling menerjang dengan kemarahan!`,
+          `Teriakan dan umpatan menggema, mereka bertarung dengan nafsu!`,
+          `Dalam kegilaan, mereka saling mencambuk dengan kata-kata tajam!`,
+        ];
+        const line2Random = line2[Math.floor(Math.random() * line2.length)];
+        client.sendMessage(message.from, line2Random);
+      },6000);
+      setTimeout(() => {
+        //line3
+        const line3 = [
+          `Pihak ${p2} pun tidak terima habis disepongin oleh ${p1}.`,
+          `GOKIL! ${p1} mencium lawannya dengan keras!`,
+          `Pertarungan yang sangat sengit terjadi antara ${p1} dengan ${p2}.`,
+          `Tak terima dengan perlakuan ${p1}, ${p2} mengamuk!`,
+          `Mereka saling menyerang dengan kemarahan yang membara!`,
+          `Emosi tak terbendung, kedua belah pihak terlibat konfrontasi sengit!`,
+          `Intensitas pertarungan semakin meningkat, tak ada yang mundur!`,
+          `Darah panas menguap, mereka bertarung dengan penuh kebencian!`,
+          `Perkelahian yang mencekam, tak ada yang bisa menghentikan mereka!`,
+          `Aksi kekerasan memuncak, pertarungan ini tak tertandingi!`,
+          `Gelombang kemarahan melanda, mereka saling menghujat dengan kejam!`,
+          `Dalam ketegangan yang tiada tara, kedua belah pihak saling berusaha mengalahkan!`,
+        ];
+        const line3Random = line3[Math.floor(Math.random() * line3.length)];
+        client.sendMessage(message.from, line3Random);
+      }, 9000);
+      setTimeout(() => {
+        //linePemenang
+        const pemenang = Math.random() < 0.5 ? p1 : p2;
+          client.sendMessage(message.from, `pemenangnya adalah ${pemenang} 🥳🥳`)
+      }, 13000);
+}
+//Belanja
+if(pesan === "!pap"){
+  linkRef.child('pap').once('value',async (snapshot) => {
+    const link = snapshot.val() || "1";
+    const randomLink = Math.floor(Math.random() * link.length);
+    const randomIndex = link[randomLink];
+    message.reply('oke!')
+    RefPoint.once('value', async (snapshot) => {
+      const point = snapshot.val() || 0;
+      if(point >= 5000){
+        const bayarPap = point - 5000;
+        await RefPoint.set(bayarPap);
+        setTimeout(async () => {
+          message.reply(await MessageMedia.fromUrl(randomIndex));
+        }, 3000)
+      }else{
+        client.sendMessage(message.from, `point lu cuma ${point}. gausah minta pap!`)
+      }
+    })
+  })
+}
+//reputasi
+if(!reputasi[corection]){
+    reputasi[corection] = 0;
+}
+for(const threshold of thresholds){
+  const sanitizedSenderC = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+  if(sanitizedSenderC === '628973997575_c_us'){
 
+  }else if(sanitizedSenderC === '6285210306474_c_us'){
 
+  }else{
+    if(reputasi[corection] >= threshold){
+        const reputasiAdded = pointRef.child(sanitizedSenderC).child('reputasi');
+        reputasiAdded.once('value', async (snapshot) => {
+            const reputasi = snapshot.val() || 0;
+            const newRep = parseInt(reputasi + 1);
+            await reputasiAdded.set(newRep);
+        });
+    }
+    break;
+  }
+}
 });
-
-
-
- 
 
 client.initialize();
