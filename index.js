@@ -108,18 +108,18 @@ client.on('message', async (message) => {
         let sisaRe = "";
         RefPoint.once('value', async (snapshot) => {
             const poin = snapshot.val() || 0;
-            const pinalty = poin - 5000;
+            const pinalty = poin - 25000;
             await RefPoint.set(pinalty);
             sisaPo = poin.toLocaleString('id-ID', { minimumFractionDigits: 0 });
         });
         RefRep.once('value', async (snapshot) => {
             const reputasi = snapshot.val() || 0;
-            const pinalty = parseInt(reputasi - 10);
+            const pinalty = parseInt(reputasi - 100);
             await RefRep.set(pinalty)
             sisaRe = reputasi.toString();
         });
         setTimeout(() => {
-            message.reply(`priiiit point -5.000, Reputasi -10.\nsisa point: ${sisaPo}\nReputasi: ${sisaRe}`);
+            message.reply(`priiiit point -25.000, Reputasi -100.\nsisa point: ${sisaPo}\nReputasi: ${sisaRe}`);
         }, 1500);
     }
 
@@ -154,7 +154,7 @@ client.on('message', async (message) => {
         client.sendMessage(message.from, menuText);
     }
     if(pesan === '!help'){
-        client.sendMessage(message.from,'!togel = main togel kalo JP dapet 50.000 Point tapi lu bayar 1.000 Point\n cara main togel tinggal gini ni "!togel 1234"\n!slot = main slot kalo JP dapet 5000 tapi lu bayar 500\n!berita = info berita terkini dari CNN, di pick secara random\n!kirim = kirim point ke grup caranya\n!kirim @.... 1000 \n\nMADE by : ETMC \nMAINTENANCE by: W0lV')
+        client.sendMessage(message.from,'!togel = main togel kalo JP dapet 50.000 Point tapi lu bayar 5.000 Point\n cara main togel tinggal gini ni "!togel 1234"\n!slot = main slot kalo JP dapet 10.000 tapi lu bayar 2.500\n!berita = info berita terkini dari CNN, di pick secara random\n!kirim = kirim point ke grup caranya\n!kirim @.... 1000 \n\nMADE by : ETMC \nMAINTENANCE by: W0lV')
     }
     if(pesan === '!rules'){
         client.sendMessage(message.from,`Aturan dibuat buat di langgar, makin sering *toxic* *reputasi* lu *ancur*\ncek reputasi !stat.\ngaboleh ngirim link *bokep* di sini kalo mau japri,\nyg mau transaksi silahkan di japri juga\nOke???\n\n*W0lv*`)
@@ -276,20 +276,34 @@ client.on('message', async (message) => {
             message.reply(`tuh si ${Data.name} ngajakin mabar ${Data.desc}`);
           });
         }
-    }
+      }
+      /*if(pesan === "!semua"){
+        const chat = await message.getChat();
+        console.log(chat);
+        let text = "";
+        let tagging =[];
+        console.log(tagging);
+        console.log(text);
+        for(let participant of chat.participant) {
+          const contact = await client.getContactById(participant.id._serialized);
+          tagging.push(contact);
+          text += `@${participant.id.user}`;
+        }
+        await chat.sendMessage(text, { mentions });
+      }*/
 //tambah nama
     if(isiNama){
       const daftarNama = isiNama[1];
       RefPoint.once('value', async(snapshot) => {
         const point = snapshot.val() || 0;
-        const gantiNama = point - 1000;
+        const gantiNama = point - 5000;
           RefNama.once('value', async (snapshot) => {
             const nama = snapshot.val() || sanitizedSender;
             if(nama === sanitizedSender){
               await RefNama.set(daftarNama);
               message.reply(`Nama berhasil di set: ${daftarNama}`);
             }else{
-              if(point >= 1000){
+              if(point >= 5000){
                 await RefPoint.set(gantiNama);
                 await RefNama.set(daftarNama);
                 message.reply(`Nama berhasil di ubah: ${daftarNama}`);
@@ -337,19 +351,18 @@ if(!point[corection]){
 for (const threshold of thresholds) {
         if (point[corection] >= threshold) {
           const sanitizedSenderF = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-          if(sanitizedSenderF === '628973997575_c_us'){
-
-          }else if(sanitizedSenderF === '6285210306474_c_us'){
-        
-          }else{
             const pointAdded = pointRef.child(sanitizedSenderF).child('point');
             pointAdded.once('value', async (snapshot) => {
               const poin = snapshot.val() || 0;
-              const randomPoint = Math.floor(Math.random() * 30) + 20;
-              const newPoint = parseInt(poin + randomPoint);
-              await pointRef.child(sanitizedSender).child('point').set(newPoint);
+              const pointPerHuruf = pesan.length;
+              if(pointPerHuruf === 0){
+                const pointJikaNol = poin + 1;
+                await pointRef.child(sanitizedSender).child('point').set(pointJikaNol);
+              }else{
+                const pointJikaBerNilai = poin + pointPerHuruf;
+                await pointRef.child(sanitizedSender).child('point').set(pointJikaBerNilai);
+              }
             });
-          }
             break;
         }
 }
@@ -417,31 +430,35 @@ if (match1) {
     const originalSender = sanitizedSender.replace(/_/g, ".");
     const sn = generateSN(16);  
 
-    RefPoint.once('value', async (snapshot) => {
+    if(jumlahPoint <= 0){
+        message.reply("gabisa mines mines lagi wkwkw");
+    }else{
+      RefPoint.once('value', async (snapshot) => {
         const poin1 = snapshot.val() || 0;
         const senderName = originalSender;
         if(senderName === originalSender){
             if(poin1 >= jumlahPoint){
-                const iniYangNgirim  = poin1 - jumlahPoint;
-                await message.reply(`Pengiriman Point sejumlah: ${jumlahPoint}, _sedang Dalam Proses_`)
-                await RefPoint.set(iniYangNgirim);
+              const iniYangNgirim  = poin1 - jumlahPoint;
+              await message.reply(`Pengiriman Point sejumlah: ${jumlahPoint}, _sedang Dalam Proses_`)
+              await RefPoint.set(iniYangNgirim);
                     pointRef.child(nomorLengkap).child('point').once('value', async (snapshot) => {
-                        const poin2 = snapshot.val() || 0;
-                        const iniYangNerima = poin2 + jumlahPoint;
-                        await pointRef.child(nomorLengkap).child('point').set(iniYangNerima);
+                      const poin2 = snapshot.val() || 0;
+                      const iniYangNerima = poin2 + jumlahPoint;
+                      await pointRef.child(nomorLengkap).child('point').set(iniYangNerima);
                     });
-
-                setTimeout(() => {
+                    
+                    setTimeout(() => {
                         message.reply(`Pengiriman point ke ${nomorTujuan}, Berhasil. SN:${sn}`)
                     }, 2000)
-            }else{ 
-                message.reply('point lu ga cukup anjg');
+                  }else{ 
+                    message.reply('point lu ga cukup anjg');
                 setTimeout(() => {
                   client.sendMessage(message.from,'eh maap toxic');
                 },2000)
+              }
             }
+          });
         }
-    });
   } else {
     message.reply("Format pesan tidak sesuai. Harap masukkan nomor tujuan dan jumlah point dengan benar.");
   } 
@@ -452,7 +469,7 @@ if (togel) {
         const masangTogel = togel[1];
         RefPoint.once('value', async (snapshot) => {
             const poin = snapshot.val() || 0;
-                if (poin >= 1000) {
+                if (poin >= 5000) {
                               if(masangTogel.match(/(\d{4})/)){
                                 isPasang = true;  
                             }else{
@@ -460,7 +477,7 @@ if (togel) {
                             }
                                 if (isPasang) {
                                         const angkaTogel = masangTogel;
-                                        const bayarTogel = poin - 1000;
+                                        const bayarTogel = poin - 5000;
                                         RefPoint.set(bayarTogel);
                                         message.reply(`Berhasil Masang Angkanya: *${angkaTogel}*.\n\nHasil 10 Detik`);
                                         setTimeout(() => {
@@ -521,7 +538,7 @@ if (pesan === '!slot') {
           const poin = snapshot.val() || 0;
           const senderName = originalSender;
           if (senderName === originalSender) {
-            if (poin >= 500) {
+            if (poin >= 2500) {
                 const result = [];
                 for (let i = 0; i < 3; i++) {
                     const row = [];
@@ -544,13 +561,13 @@ if (pesan === '!slot') {
                     
                 if (isWinningCombination(result)) {
                     setTimeout(() =>{
-                        const menangSlot = poin + 5000;
+                        const menangSlot = poin + 10000;
                         RefPoint.set(menangSlot);
                         message.reply('wihh menang 5.000.');
                     }, 2000);
                 } else {
                     setTimeout(() =>{
-                        const bayarSlot = poin - 500;
+                        const bayarSlot = poin - 2500;
                         RefPoint.set(bayarSlot);
                         message.reply('yahaha kalah blog, coba lagi sampe miskin');
                     }, 2000);
@@ -678,11 +695,11 @@ if(pesan === "!pap"){
     const link = snapshot.val() || "1";
     const randomLink = Math.floor(Math.random() * link.length);
     const randomIndex = link[randomLink];
-    message.reply('oke!')
     RefPoint.once('value', async (snapshot) => {
       const point = snapshot.val() || 0;
-      if(point >= 5000){
-        const bayarPap = point - 5000;
+      if(point >= 50000){
+        message.reply('bentar gua foto dulu')
+        const bayarPap = point - 50000;
         await RefPoint.set(bayarPap);
         setTimeout(async () => {
           message.reply(await MessageMedia.fromUrl(randomIndex));
@@ -699,11 +716,7 @@ if(!reputasi[corection]){
 }
 for(const threshold of thresholds){
   const sanitizedSenderC = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-  if(sanitizedSenderC === '628973997575_c_us'){
 
-  }else if(sanitizedSenderC === '6285210306474_c_us'){
-
-  }else{
     if(reputasi[corection] >= threshold){
         const reputasiAdded = pointRef.child(sanitizedSenderC).child('reputasi');
         reputasiAdded.once('value', async (snapshot) => {
@@ -713,7 +726,6 @@ for(const threshold of thresholds){
         });
     }
     break;
-  }
 }
 });
 
