@@ -21,16 +21,19 @@ admin.initializeApp({
     databaseURL: process.env.DATABASE_URL
   }); 
 const db = admin.database();
-const pointRef = db.ref('dataPengguna/pengguna')
-const linkRef = db.ref('dataData/link')
-const DataRef = db.ref('dataData/command')
-const DataMRef = db.ref('dataData/mabar')
+const pointRef = db.ref('dataPengguna/pengguna');
+const PokemonRef = db.ref('dataPengguna/pengguna');
+const linkRef = db.ref('dataData/link');
+const ReplyRef = db.ref('dataData/BalasanKataKasar');
+const ToxicRef = db.ref('dataData/kataKasar');
+const DataMRef = db.ref('dataData/mabar');
 const point = {};
 const reputasi = {};
 const thresholds = [0, 100 ,200, 500, 1000, 5000, 10000, 20000, 500000, 1000000, 1000000000];
 const regexCari = /^!cari\s(.+)/;
 const regexKirim = /^!kirim\s(.+)/;
 const regexTogel = /^!togel\s(\d{4})/;
+const regexPBuyPoke = /^!buy\s+(\w+)\s+(\d+)$/;
 const regexRibut = /^!ribut\s(.+)/;
 const regexNama = /^!nama\s(.+)/;
 const regexInfo = /^!info\s(.+)/;
@@ -49,13 +52,15 @@ client.on('message', async (message) => {
     const ribut = pesan.match(regexRibut);
     const isiNama = pesan.match(regexNama);
     const InfoMas = pesan.match(regexInfo);
+    const Buy = pesan.match(regexPBuyPoke);
     const Mabar = pesan.match(regexMabar);
-    const tambahCommand = pesan.match(regexCommand);
     const RefNama = pointRef.child(sanitizedSender).child('nama');
     const RefPoint = pointRef.child(sanitizedSender).child('point');
     const RefRep = pointRef.child(sanitizedSender).child('reputasi');
-    
-    // handler nama
+    const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
+    const RefPoke = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokeballs');
+    const RefGacoan = PokemonRef.child(sanitizedSender).child('pokemon').child('gacoan');
+    const RefPokeDelay = PokemonRef.child(sanitizedSender).child('pokemon').child('delay');
 
     function addMabarData(mabar, nama) {
       DataMRef.child("1").set({
@@ -72,76 +77,140 @@ client.on('message', async (message) => {
         }
         return sn;
     }
+//Pesan Balasan 
+if (pesan) {
+  await ToxicRef.once('value', (snapshot) => {
+    const toxicWords = snapshot.val() || [];
+    const pesanArray = pesan.toLowerCase().split(' ');
+    const foundToxicWord = pesanArray.find((word) => {
+      return toxicWords.findIndex((toxicWord) => word === toxicWord) !== -1;
+    });
 
-//Pesan Balasan
+    if (foundToxicWord) {
+      ReplyRef.once('value', (snapshot) => {
+        const balasan = snapshot.val() || [];
+        const pesanBalasanArray = Object.values(balasan);
+        const pesanBalasan = pesanBalasanArray[Math.floor(Math.random() * pesanBalasanArray.length)] || 'Pesan balasan default';
+        message.reply(pesanBalasan);
+      });
+    }
+  });
+}
+
     if(
-        pesan.match(/\bkon\b/i) ||
-        pesan.match(/\bkontol\b/i) ||
-        pesan.match(/\bkntl\b/i) ||
-        pesan.match(/\bkentot\b/i) ||
-        pesan.match(/\bngentot\b/i) ||
-        pesan.match(/\bmek\b/i) ||
-        pesan.match(/\btot\b/i) ||
-        pesan.match(/\bngen\b/i) ||
-        pesan.match(/\bsu\b/i) ||
-        pesan.match(/\banjg\b/i) ||
-        pesan.match(/\bajg\b/i) ||
-        pesan.match(/\bpuki\b/i) ||
-        pesan.match(/\bkimak\b/i) ||
-        pesan.match(/\banjing\b/i) ||
-        pesan.match(/\basu\b/i) ||
-        pesan.match(/\bkimak\b/i) ||
-        pesan.match(/\bler\b/i) ||
-        pesan.match(/\bpler\b/i) ||
-        pesan.match(/\btai\b/i) ||
-        pesan.match(/\bcok\b/i) ||
-        pesan.match(/\bmemek\b/i) ||
-        pesan.match(/\bmmk\b/i) ||
-        pesan.match(/\bbajingan\b/i) ||
-        pesan.match(/\bbangsat\b/i) ||
-        pesan.match(/\bsat\b/i) ||
-        pesan.match(/\bcuk\b/i) ||
-        pesan.match(/\bass\b/i) ||
-        pesan.match(/\banal\b/i) ||
+      pesan.match(/\banjg\b/i) ||
+      pesan.match(/\bajg\b/i) ||
+      pesan.match(/\banal\b/i) ||
+      pesan.match(/\basu\b/i) ||
+      pesan.match(/\bass\b/i) ||
+      pesan.match(/\banjing\b/i) ||
+      pesan.match(/\banjeng\b/i) ||
+      pesan.match(/\bbajingan\b/i) ||
+      pesan.match(/\bbgst\b/i) ||
+      pesan.match(/\bbangsat\b/i) ||
+      pesan.match(/\bbabi\b/i) ||
+      pesan.match(/\bcuk\b/i) ||
+      pesan.match(/\bcok\b/i) ||
+      pesan.match(/\bcukimai\b/i) ||
+      pesan.match(/\bdancok\b/i) ||
+      pesan.match(/\bdancuk\b/i) ||
+      pesan.match(/\bentot\b/i) ||
+      pesan.match(/\bewe\b/i) ||
+      pesan.match(/\bengas\b/i) ||
+      pesan.match(/\bebol\b/i) ||
+      pesan.match(/\bjingkontot\b/i) ||
+      pesan.match(/\bjing\b/i) ||
+      pesan.match(/\bjink\b/i) ||
+      pesan.match(/\bjembut\b/i) ||
+      pesan.match(/\bjembod\b/i) ||
+      pesan.match(/\bjmbd\b/i) ||
+      pesan.match(/\bkon\b/i) ||
+      pesan.match(/\bkontot\b/i) ||
+      pesan.match(/\bkontol\b/i) ||
+      pesan.match(/\bkntl\b/i) ||
+      pesan.match(/\bkentot\b/i) ||
+      pesan.match(/\bkintil\b/i) ||
+      pesan.match(/\bkimak\b/i) ||
+      pesan.match(/\bler\b/i) ||
+      pesan.match(/\bmemek\b/i) ||
+      pesan.match(/\bmek\b/i) ||
+      pesan.match(/\bmmk\b/i) ||
+      pesan.match(/\bmeki\b/i) ||
+      pesan.match(/\bngen\b/i) ||
+      pesan.match(/\bngentot\b/i) ||
+      pesan.match(/\bnigga\b/i) ||
+      pesan.match(/\bni99a\b/i) ||
+      pesan.match(/\bnenen\b/i) ||
+      pesan.match(/\bpantek\b/i) ||
+      pesan.match(/\bpanteq\b/i) ||
+      pesan.match(/\bpntek\b/i) ||
+      pesan.match(/\bpntk\b/i) ||
+      pesan.match(/\bpler\b/i) ||
+      pesan.match(/\bpepek\b/i) ||
+      pesan.match(/\bppk\b/i) ||
+      pesan.match(/\bpuki\b/i) ||
+      pesan.match(/\bpukimak\b/i) ||
+      pesan.match(/\bpentek\b/i) ||
+      pesan.match(/\bpukima\b/i) ||
+      pesan.match(/\bresty\b/i) ||
+      pesan.match(/\bresti\b/i) ||
+      pesan.match(/\brsty\b/i) ||
+      pesan.match(/\bsu\b/i) ||
+      pesan.match(/\bsange\b/i) ||
+      pesan.match(/\bsagne\b/i) ||
+      pesan.match(/\bsat\b/i) ||
+      pesan.match(/\btot\b/i) ||
+      pesan.match(/\btod\b/i) ||
+      pesan.match(/\btolol\b/i) ||
+      pesan.match(/\btll\b/i) ||
+      pesan.match(/\bttt\b/i) ||
+      pesan.match(/\btitit\b/i) ||
+      pesan.match(/\btai\b/i) ||
         pesan.match(/\btod\b/i)){
         let sisaPo = "";
         let sisaRe = "";
         RefPoint.once('value', async (snapshot) => {
             const poin = snapshot.val() || 0;
-            const pinalty = poin - 5000;
+            const pinalty = poin - 25000;
             await RefPoint.set(pinalty);
             sisaPo = poin.toLocaleString('id-ID', { minimumFractionDigits: 0 });
         });
         RefRep.once('value', async (snapshot) => {
             const reputasi = snapshot.val() || 0;
-            const pinalty = parseInt(reputasi - 10);
+            const pinalty = parseInt(reputasi - 100);
             await RefRep.set(pinalty)
             sisaRe = reputasi.toString();
         });
         setTimeout(() => {
-            message.reply(`priiiit point -5.000, Reputasi -10.\nsisa point: ${sisaPo}\nReputasi: ${sisaRe}`);
+            message.reply(`priiiit point -25.000, Reputasi -100.\nsisa point: ${sisaPo}\nReputasi: ${sisaRe}`);
         }, 1500);
     }
 
     //Command
-    if (pesan === '!bot'){
+    if (pesan === '!help' || pesan === '!bot'){
         const commands = [
-          { p: '!help', label: 'Bantuan' },
-          { p: '!rules', label: 'Aturan' },
           { p: '!berita', label: 'Berita Terkini' },
           { p: '!cuaca', label: 'Info Cuaca' },
           { p: '!doa', label: 'Doa Harian' },
-          { p: '!quotes', label: 'Apa Quotes Untuk mu?' },
-          { p: '!nama namaKalian', label: 'isi namamu di grub ini!' },
-          { p: '!rate', label: 'Cek Rate 1USD = Rp xx.xxx' },
           { p: '!info cuaca/mabar', label: 'Cek info cuaca dan info mabar' },
-          { p: '!stat', label: 'Cek Point, Reputasi & status' },
-          { p: '!mabar "game apa, jam berapa, kapan"', label: 'Tambah info mabar' },
-          { p: '!ribut @...', label: 'Kalo ada masalah ributnya pake ini ya' },
           { p: '!kirim @... 12345', label: 'Kirim Point ke Teman' },
-          { p: '!togel 1234', label: 'Main Togel' },
+          { p: '!mabar "game apa, jam berapa, kapan"', label: 'Tambah info mabar' },
+          { p: '!nama namaKalian', label: 'isi namamu di grub ini!' },
+          { p: '!quotes', label: 'Apa Quotes Untuk mu?' },
+          { p: '!rate', label: 'Cek Rate 1USD = Rp xx.xxx' },
+          { p: '!rules', label: 'Aturan' },
+          { p: '!stat', label: 'Cek Point, Reputasi & status' },
+          { p: '!ribut @...', label: 'Kalo ada masalah ributnya pake ini ya' },
+          { p: '-- *GAMES* --', label: '-- *GAMES* --' },
+          { p: '!togel 1234', label: 'Main Togel ngebid 5.000Point kalo menang dapet 50.000Point' },
+          { p: '!slot', label: 'Main Slot bayar 2.500Point kalo menang dapet 10.000Point' },
           { p: '!pap', label: 'ngirim pap jahat' },
-          { p: '!slot', label: 'Main Slot' }
+          { p: '!catch', label: 'Tangkap Pokemon' },
+          { p: '!pokeball', label: 'nyari pokeballs' },
+          { p: '!cektas', label: 'cek inventory kalian' },
+          { p: '!pokedex', label: 'cek list pokemon yang udah kalian dapat' },
+          { p: '!fight @....', label: 'ajak temen kalian berantem pokemon, yg menang dapet 100reputasi' },
+          { p: '!redeem 08xxxx', label: 'Redeem 102.500Point ke Pulsa All Operator Rp 10.000' },
         ];
         
         let menuText = '*ETMC-BOT nih boss* \n\n';
@@ -152,9 +221,6 @@ client.on('message', async (message) => {
         
         menuText += '\nBaru ada Command Ini Doang ni';
         client.sendMessage(message.from, menuText);
-    }
-    if(pesan === '!help'){
-        client.sendMessage(message.from,'!togel = main togel kalo JP dapet 50.000 Point tapi lu bayar 1.000 Point\n cara main togel tinggal gini ni "!togel 1234"\n!slot = main slot kalo JP dapet 5000 tapi lu bayar 500\n!berita = info berita terkini dari CNN, di pick secara random\n!kirim = kirim point ke grup caranya\n!kirim @.... 1000 \n\nMADE by : ETMC \nMAINTENANCE by: W0lV')
     }
     if(pesan === '!rules'){
         client.sendMessage(message.from,`Aturan dibuat buat di langgar, makin sering *toxic* *reputasi* lu *ancur*\ncek reputasi !stat.\ngaboleh ngirim link *bokep* di sini kalo mau japri,\nyg mau transaksi silahkan di japri juga\nOke???\n\n*W0lv*`)
@@ -276,25 +342,47 @@ client.on('message', async (message) => {
             message.reply(`tuh si ${Data.name} ngajakin mabar ${Data.desc}`);
           });
         }
-    }
+      }
+      if (pesan.startsWith('!redeem')) {
+        const param1 = pesan.split(' ')[1];
+        console.log(param1);
+        if (!isNaN(param1) && param1.length > 10) {
+          RefPoint.once('value', async (snapshot) => {
+            const point = snapshot.val() || 0;
+            if (point >= 102500) {
+              const bayarP = point - 102500;
+              await RefPoint.set(bayarP);
+              await message.reply('oke, proses yaaa. mohon tunggu');
+              await client.sendMessage('628973997575@c.us', `10.${param1}.2512`);
+              setTimeout(() => {
+                message.reply(`*TRX PULSA 10.000*\n*TUJUAN*:${param1}\n*HRG*=102.500point\n*SN*:${generateSN(16)}\n*SUKSES* SisaPoint: ${point.toLocaleString('id-ID',{minimumFractionDigits: 0})}`);
+              }, 70000)
+            } else {
+              message.reply('mass pointnya belom cukup yaa farming lagi gih');
+            }
+          });
+        } else {
+          message.reply('Masukan nomor Tujuan dengan benar');
+        }
+      } 
 //tambah nama
     if(isiNama){
       const daftarNama = isiNama[1];
       RefPoint.once('value', async(snapshot) => {
         const point = snapshot.val() || 0;
-        const gantiNama = point - 1000;
+        const gantiNama = point - 5000;
           RefNama.once('value', async (snapshot) => {
             const nama = snapshot.val() || sanitizedSender;
             if(nama === sanitizedSender){
               await RefNama.set(daftarNama);
               message.reply(`Nama berhasil di set: ${daftarNama}`);
             }else{
-              if(point >= 1000){
+              if(point >= 5000){
                 await RefPoint.set(gantiNama);
                 await RefNama.set(daftarNama);
                 message.reply(`Nama berhasil di ubah: ${daftarNama}`);
               }else{
-                message.reply(`ubah nama minimal punya 1000Point, point lu ${point}`)
+                message.reply(`ubah nama minimal punya 5000Point, point lu ${point}`)
               }
             }
            });
@@ -328,7 +416,7 @@ client.on('message', async (message) => {
     const name = snapshot.val();
     addMabarData(param1, name);
   });
-    }
+}
 
 //point system
 if(!point[corection]){
@@ -337,19 +425,18 @@ if(!point[corection]){
 for (const threshold of thresholds) {
         if (point[corection] >= threshold) {
           const sanitizedSenderF = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-          if(sanitizedSenderF === '628973997575_c_us'){
-
-          }else if(sanitizedSenderF === '6285210306474_c_us'){
-        
-          }else{
             const pointAdded = pointRef.child(sanitizedSenderF).child('point');
             pointAdded.once('value', async (snapshot) => {
               const poin = snapshot.val() || 0;
-              const randomPoint = Math.floor(Math.random() * 30) + 20;
-              const newPoint = parseInt(poin + randomPoint);
-              await pointRef.child(sanitizedSender).child('point').set(newPoint);
+              const pointPerHuruf = pesan.length;
+              if(pointPerHuruf === 0){
+                const pointJikaNol = poin + 1;
+                await pointRef.child(sanitizedSender).child('point').set(pointJikaNol);
+              }else{
+                const pointJikaBerNilai = poin + pointPerHuruf;
+                await pointRef.child(sanitizedSender).child('point').set(pointJikaBerNilai);
+              }
             });
-          }
             break;
         }
 }
@@ -417,31 +504,35 @@ if (match1) {
     const originalSender = sanitizedSender.replace(/_/g, ".");
     const sn = generateSN(16);  
 
-    RefPoint.once('value', async (snapshot) => {
+    if(jumlahPoint <= 0){
+        message.reply("gabisa mines mines lagi wkwkw");
+    }else{
+      RefPoint.once('value', async (snapshot) => {
         const poin1 = snapshot.val() || 0;
         const senderName = originalSender;
         if(senderName === originalSender){
             if(poin1 >= jumlahPoint){
-                const iniYangNgirim  = poin1 - jumlahPoint;
-                await message.reply(`Pengiriman Point sejumlah: ${jumlahPoint}, _sedang Dalam Proses_`)
-                await RefPoint.set(iniYangNgirim);
+              const iniYangNgirim  = poin1 - jumlahPoint;
+              await message.reply(`Pengiriman Point sejumlah: ${jumlahPoint}, _sedang Dalam Proses_`)
+              await RefPoint.set(iniYangNgirim);
                     pointRef.child(nomorLengkap).child('point').once('value', async (snapshot) => {
-                        const poin2 = snapshot.val() || 0;
-                        const iniYangNerima = poin2 + jumlahPoint;
-                        await pointRef.child(nomorLengkap).child('point').set(iniYangNerima);
+                      const poin2 = snapshot.val() || 0;
+                      const iniYangNerima = poin2 + jumlahPoint;
+                      await pointRef.child(nomorLengkap).child('point').set(iniYangNerima);
                     });
-
-                setTimeout(() => {
+                    
+                    setTimeout(() => {
                         message.reply(`Pengiriman point ke ${nomorTujuan}, Berhasil. SN:${sn}`)
                     }, 2000)
-            }else{ 
-                message.reply('point lu ga cukup anjg');
+                  }else{ 
+                    message.reply('point lu ga cukup anjg');
                 setTimeout(() => {
                   client.sendMessage(message.from,'eh maap toxic');
                 },2000)
+              }
             }
+          });
         }
-    });
   } else {
     message.reply("Format pesan tidak sesuai. Harap masukkan nomor tujuan dan jumlah point dengan benar.");
   } 
@@ -452,7 +543,7 @@ if (togel) {
         const masangTogel = togel[1];
         RefPoint.once('value', async (snapshot) => {
             const poin = snapshot.val() || 0;
-                if (poin >= 1000) {
+                if (poin >= 5000) {
                               if(masangTogel.match(/(\d{4})/)){
                                 isPasang = true;  
                             }else{
@@ -460,12 +551,12 @@ if (togel) {
                             }
                                 if (isPasang) {
                                         const angkaTogel = masangTogel;
-                                        const bayarTogel = poin - 1000;
+                                        const bayarTogel = poin - 5000;
                                         RefPoint.set(bayarTogel);
                                         message.reply(`Berhasil Masang Angkanya: *${angkaTogel}*.\n\nHasil 10 Detik`);
                                         setTimeout(() => {
                                             const hasil = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-                                            if (hasil === angkaTogel || angkaTogel === '1111') {
+                                            if (hasil === angkaTogel) {
                                                 const menangTogel = poin + 50000;
                                                 RefPoint.set(menangTogel);
                                                 message.reply(`*Togel ETMC: ${hasil}*.\n_Boss Masang: ${angkaTogel}_`);
@@ -521,7 +612,7 @@ if (pesan === '!slot') {
           const poin = snapshot.val() || 0;
           const senderName = originalSender;
           if (senderName === originalSender) {
-            if (poin >= 500) {
+            if (poin >= 2500) {
                 const result = [];
                 for (let i = 0; i < 3; i++) {
                     const row = [];
@@ -544,13 +635,13 @@ if (pesan === '!slot') {
                     
                 if (isWinningCombination(result)) {
                     setTimeout(() =>{
-                        const menangSlot = poin + 5000;
+                        const menangSlot = poin + 10000;
                         RefPoint.set(menangSlot);
                         message.reply('wihh menang 5.000.');
                     }, 2000);
                 } else {
                     setTimeout(() =>{
-                        const bayarSlot = poin - 500;
+                        const bayarSlot = poin - 2500;
                         RefPoint.set(bayarSlot);
                         message.reply('yahaha kalah blog, coba lagi sampe miskin');
                     }, 2000);
@@ -669,7 +760,11 @@ if(ribut){
       setTimeout(() => {
         //linePemenang
         const pemenang = Math.random() < 0.5 ? p1 : p2;
-          client.sendMessage(message.from, `pemenangnya adalah ${pemenang} 🥳🥳`)
+        if(pemenang === p1){
+          client.sendMessage(message.from, `pemenangnya adalah ${pemenang} 🥳🥳`);
+        }else if( pemenang === p2){
+          client.sendMessage(message.from, `pemenangnya adalah ${pemenang} 🥳🥳`);
+        };
       }, 13000);
 }
 //Belanja
@@ -678,17 +773,18 @@ if(pesan === "!pap"){
     const link = snapshot.val() || "1";
     const randomLink = Math.floor(Math.random() * link.length);
     const randomIndex = link[randomLink];
-    message.reply('oke!')
     RefPoint.once('value', async (snapshot) => {
       const point = snapshot.val() || 0;
-      if(point >= 5000){
-        const bayarPap = point - 5000;
+      if(point >= 50000){
+        message.reply('bentar gua foto dulu')
+        const bayarPap = point - 50000;
         await RefPoint.set(bayarPap);
         setTimeout(async () => {
           message.reply(await MessageMedia.fromUrl(randomIndex));
         }, 3000)
       }else{
-        client.sendMessage(message.from, `point lu cuma ${point}. gausah minta pap!`)
+        const kurangBerapa = point - 50000;
+        client.sendMessage(message.from, `point lu ada ${point.toLocaleString('id-ID',{minimumFractionDigits: 0})}. kurang ${kurangBerapa.toLocaleString('id-ID',{minimumFractionDigits: 0})}\n harga pap lagi naik ni 50K !`)
       }
     })
   })
@@ -699,11 +795,7 @@ if(!reputasi[corection]){
 }
 for(const threshold of thresholds){
   const sanitizedSenderC = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-  if(sanitizedSenderC === '628973997575_c_us'){
 
-  }else if(sanitizedSenderC === '6285210306474_c_us'){
-
-  }else{
     if(reputasi[corection] >= threshold){
         const reputasiAdded = pointRef.child(sanitizedSenderC).child('reputasi');
         reputasiAdded.once('value', async (snapshot) => {
@@ -713,8 +805,332 @@ for(const threshold of thresholds){
         });
     }
     break;
+}
+//POKEMON SYSTEM
+  /* POKEBALLS*/
+  function usePokeball(){
+    let pokeballsCount = Math.floor(Math.random() * 3) + 1;
+    RefPokeDelay.once('value', async (snapshot) => {
+        const delay = snapshot.val() || 'true';
+        if(delay === 'true'){
+          RefPoke.once('value',async (snapshot) => {
+            const poke = snapshot.val() || 0;
+              const nambahpoke = poke + pokeballsCount;
+              await RefPoke.set(nambahpoke);
+              client.sendMessage(sender, `selamat kamu dapat ${pokeballsCount} Pokeballs.`)
+            });
+            await RefPokeDelay.set('false');
+            setTimeout(async () => {
+              await RefPokeDelay.set('true');
+            }, 60000)
+          }else{
+            setTimeout(async () => {
+              await RefPokeDelay.set('true');
+            }, 60000)
+            message.reply('Jeda 1 menit ya, buat farming Pokeballs...')
+          }
+    });
+  };
+  /*BELI POKEBALL*/
+  function BuyPokeballs(jumlah) {
+    RefPoint.once('value', async (snapshot) => {
+      const point = snapshot.val()
+      const jumlahBeli = jumlah * 100;
+      const jumlahParam = parseInt(jumlah);
+      const bayarPoke = point - jumlahBeli;
+      if(jumlah <= 0){
+        message.reply('gabisa mines mines lagi, wkwkwk');
+      }else{
+        if(point <= 0){
+          client.sendMessage(sender, 'point mu mines, sering2 aktif di grub ya biar banyak point hehe');
+        }else if(point >= jumlahBeli){
+          setTimeout(async () => {
+            await RefPoint.set(bayarPoke);
+          }, 1000)
+          RefPoke.once('value', async (snapshot) => {
+            const poke = snapshot.val() || 0;
+            const nambahPoke = parseInt(poke + jumlahParam);
+            await RefPoke.set(nambahPoke);
+          });
+        message.reply(`pembelian pokeballs sebanyak ${jumlah} berhasil`)
+      }else{
+        message.reply('point tidak cukup cuy, harga pokeballs 1 nya 100point');
+      }
+    }
+    });
+  }
+
+
+
+
+
+  /*command pokemon */
+if(pesan === '!pokeball'){
+  usePokeball();
+};
+if(Buy){
+  const trigger = Buy[1];
+  const param1 = Buy[2];
+  if(trigger === 'pokeball'){
+    BuyPokeballs(param1);
+  }else if(trigger === 'pokemon'){
+    client.sendMessage(sender, 'Sedang dalam tahap development')
   }
 }
-});
+if(pesan === '!cektas'){
+  let pokeballs = '';
+  const pokemon = [];
+  RefPoke.once('value', async (snapshot) => {
+      const poke = snapshot.val() || 0;
+      pokeballs = await poke;
+    });
+  await RefPokemon.once('value', async (snapshot) => {
+    const pokemonA = await snapshot.val() || {};
+    const Vlimited = Object.keys(pokemonA);
+    const limited5 = Vlimited.slice(0,5);
+    limited5.forEach((id) => {
+      const pokemonName = pokemonA[id].namaPokemon;
+      pokemon.push(pokemonName);
+    });
+  });
+  setTimeout(async () => {
+    const pokemonList = pokemon.map((name, index) => `${'-'} ${name}`).join("\n");
+    message.reply(`Pokeballs: ${pokeballs}.\nPokemon:\n${pokemonList}`);
+  },1000 )
+}
 
-client.initialize();
+if (pesan === '!pokedex') {
+  const pokemon = [];
+
+  await RefPokemon.once('value', async (snapshot) => {
+    const pokemonData = snapshot.val() || {};
+
+    Object.keys(pokemonData).forEach((id) => {
+      const pokemonName = pokemonData[id].namaPokemon;
+      const pokemonHP = pokemonData[id].HP;
+      const pokemonATT = pokemonData[id].ATTACK;
+      const pokemonDEFF = pokemonData[id].DEFENSE;
+      const pokemonTYPE = pokemonData[id].TYPE;
+
+      const pokemonStats = {
+        name: pokemonName,
+        hp: pokemonHP,
+        attack: pokemonATT,
+        defense: pokemonDEFF,
+        type: pokemonTYPE
+      };
+
+      pokemon.push(pokemonStats);
+    });
+  });
+
+  setTimeout(() => {
+    const jumlahPokemon = pokemon.length;
+    let pokemonList = '';
+    pokemon.forEach((pokemonStats, index) => {
+      const { name, hp, attack, defense, type } = pokemonStats;
+      pokemonList += `${index + 1}. ${name}\n`;
+      pokemonList += `   - HP: ${hp}\n`;
+      pokemonList += `   - Attack: ${attack}\n`;
+      pokemonList += `   - Defense: ${defense}\n`;
+      pokemonList += `   - Type: ${type}\n`;
+    });
+
+    message.reply(`*POKÉDEX*.\nJumlah Pokemon: ${jumlahPokemon}\n${pokemonList}`);
+  }, 1000);
+}
+
+if(pesan === "!catch"){
+  await axios.get(`https://pokeapi.co/api/v2/pokemon/?offset=0&limit=2200`).then(resp => {
+  const raw = resp.data.results;
+  const pickOnePoke = raw.map(pokemon => pokemon);
+  const randomPoke = pickOnePoke[Math.floor(Math.random() * raw.length)];
+  const resultValue = Math.random();
+  const chanceBerhasil = 0.6;
+  if(chanceBerhasil <= resultValue){
+    RefPoke.once('value', async (snapshot) => {
+      const pokeball = snapshot.val() || 0;
+      const pakePokeball = pokeball - 1;
+      if(pokeball >= 1){
+        await RefPoke.set(pakePokeball);
+        await axios.get(randomPoke.url).then(respon => {
+          message.reply(`*${randomPoke.name.toUpperCase()}*\nSTATUS:\n${respon.data.stats[0].stat.name.toUpperCase()}: ${respon.data.stats[0].base_stat}.\n${respon.data.stats[1].stat.name.toUpperCase()}: ${respon.data.stats[1].base_stat}\n${respon.data.stats[2].stat.name.toUpperCase()}: ${respon.data.stats[2].base_stat}\n${respon.data.stats[5].stat.name.toUpperCase()}: ${respon.data.stats[5].base_stat}\n\nPokemon Type: ${respon.data.types[0].type.name.toUpperCase()}.`);
+          RefPokemon.push({
+            namaPokemon : randomPoke.name.toUpperCase(),
+            HP : respon.data.stats[0].base_stat,  
+            ATTACK : respon.data.stats[1].base_stat,  
+            DEFENSE : respon.data.stats[2].base_stat,  
+            SPEED : respon.data.stats[5].base_stat,  
+            TYPE : respon.data.types[0].type.name.toUpperCase()
+          })
+        });
+      }else{
+        message.reply('nangkep pokemon gabisa pake tangan mas. cari pokeball dlu gih !pokeball.\nKalo ga beli !buy pokeball 1');
+      }
+    })
+  }else{
+    RefPoke.once('value', async (snapshot) => {
+      const pokeball = snapshot.val() || 0;
+      const pakePokeball = pokeball - 1;
+      if(pokeball >= 1){
+        await RefPoke.set(pakePokeball);
+        message.reply('awokaowk, kabur pokemonnya');
+      }else{
+        message.reply('nangkep pokemon gabisa pake tangan mas. cari pokeball dlu gih !pokeball.\nKalo ga beli !buy pokeball 1');
+      }
+      RefPoke.set(pakePokeball);
+    })
+      
+  }
+  }).catch((err) => {
+    console.log(err);
+  })
+}
+
+if (pesan.startsWith('!setgacoan')) {
+  const param1 = parseInt(pesan.split(' ')[1]) - 1;
+  const pokemon = [];
+
+  if (param1 >= 0) {
+    await RefPokemon.once('value', async (snapshot) => {
+      const pokemonData = snapshot.val() || {};
+
+      Object.keys(pokemonData).forEach((id) => {
+        const pokemonName = pokemonData[id].namaPokemon;
+        const pokemonHP = pokemonData[id].HP;
+        const pokemonATT = pokemonData[id].ATTACK;
+        const pokemonDEFF = pokemonData[id].DEFENSE;
+        const pokemonSPD = pokemonData[id].SPEED;
+        const pokemonTYPE = pokemonData[id].TYPE;
+
+        const pokemonStats = {
+          name: pokemonName,
+          hp: pokemonHP,
+          attack: pokemonATT,
+          defense: pokemonDEFF,
+          speed: pokemonSPD,
+          type: pokemonTYPE
+        };
+
+        pokemon.push(pokemonStats);
+      });
+    });
+
+    setTimeout(() => {
+      const jumlahPokemon = pokemon.length;
+      if (param1 < jumlahPokemon) {
+        const gacoan = pokemon[param1];
+        const { name, hp, attack, defense, speed, type } = gacoan;
+
+        // Simpan gacoan ke dalam database
+        RefGacoan.set(gacoan);
+        let pokemonList = '';
+        pokemonList += `Gacoan: ${name}\n`;
+        pokemonList += `   - HP: ${hp}\n`;
+        pokemonList += `   - Attack: ${attack}\n`;
+        pokemonList += `   - Defense: ${defense}\n`;
+        pokemonList += `   - Speed: ${speed}\n`;
+        pokemonList += `   - Type: ${type}\n`;
+        message.reply(`Berhasil set Gacoan:\n${pokemonList}`);
+      } else {
+        message.reply(`Nomor Pokemon tidak valid. Silakan pilih nomor antara 1 dan ${jumlahPokemon}.`);
+      }
+    }, 1000);
+  } else {
+    message.reply(`Nomor Pokemon tidak valid. Silakan pilih nomor antara 1 dan ${pokemon.length}.`);
+  }
+}
+
+if (pesan.startsWith('!fight')) {
+  let p1 = [];
+  let p2 = [];
+  const param1 = pesan.split(' ')[1];
+  const RefGacoan2 = param1.replace(/@/g, '') + '_c_us';
+  const RefGacoanP2 = PokemonRef.child(RefGacoan2).child('pokemon').child('gacoan');
+  const RefRep2 = pointRef.child(RefGacoan2).child('reputasi');
+
+  if (param1.length > 11) {
+    RefGacoan.once('value', async (snapshot) => {
+      const gacoanP1 = snapshot.val() || {};
+      if (Object.keys(gacoanP1).length > 0) {
+        p1.push(gacoanP1);
+      } else {
+        message.reply('lu belum ada gacoan. set dulu !setgacoan');
+      }
+    });
+
+    RefGacoanP2.once('value', async (snapshot) => {
+      const gacoanP2 = snapshot.val() || {};
+      if (Object.keys(gacoanP2).length > 0) {
+        p2.push(gacoanP2);
+      } else {
+        message.reply('Lawan lu belom punya gacoan. Telponin suruh set gitu');
+      }
+    });
+
+    setTimeout(async () => {
+      if (p1.length > 0 && p2.length > 0) {
+        console.log(p1);
+        console.log(p2);
+        message.reply(`Pertarungan antara ${p1[0].name} VS ${p2[0].name}`);
+
+        const fightLoop = async () => {
+          let P1HP = p1[0].hp;
+          let P2HP = p2[0].hp;
+          let winner = null;
+          RefRep.once('value', async (snapshot) => {
+            const val1 = snapshot.val() || 0;
+            const repmenang = val1 + 100;
+            const repKalah = val1 - 10;
+
+            RefRep2.once('value', async (snapshot) => {
+              const val2 = snapshot.val() || 0;
+              const repmenang2 = val2 + 100;
+              const repKalah2 = val2 - 10;
+
+              const P1att = p1[0].attack / p2[0].defense * 15;
+              const P2att = p2[0].attack / p1[0].defense * 15;
+              P1HP -= P2att;
+              P2HP -= P1att;
+              console.log(P1HP);
+              console.log(P2HP);
+              console.log(P1att);
+              console.log(P2att);
+
+              if (P1HP > 0 && P2HP > 0) {
+                setTimeout(fightLoop, 1000);
+                //message.reply(`${p1[0].name} Menyerang dengan damage ${parseInt(P1att)}, dan ${p2[0].name} menyerang dengan damage ${parseInt(P2att)}`)
+                //message.reply(`HP ${p1[0].name}: ${parseInt(P1HP)}\nHP ${p2[0].name}: ${parseInt(P2HP)}`)
+              } else {
+                if (P1HP <= 0 && P2HP <= 0) {
+                  message.reply(`Pertarungan berakhir dengan hasil seri!`);
+                } else if (P1HP <= 0) {
+                  await RefRep2.set(repmenang2)
+                  await RefRep.set(repKalah)
+                  winner = p2[0].name;
+                  message.reply(`Pertarungan berakhir! ${p2[0].name} adalah pemenangnya!`);
+                } else {
+                  await RefRep.set(repmenang)
+                  await RefRep2.set(repKalah2)
+                  winner = p1[0].name;
+                  message.reply(`Pertarungan berakhir! ${p1[0].name} adalah pemenangnya!`);
+                }
+              }
+            });
+          });
+        };
+
+        setTimeout(fightLoop, 2000);
+      } else {
+        message.reply(`Pertarungan Gagal. gatau kenapa lah, cape anjir`);
+      }
+    }, 1000);
+  } else {
+    message.reply('tag aja dlu orng nya');
+  }
+}
+  
+  
+  //end of the line
+});
+client.initialize();  
