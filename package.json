@@ -1,6 +1,6 @@
 {
   "name": "etmc-whatsapp-bot",
-  "version": "2.0.475",
+  "version": "3.6.235.4-158713",
   "description": "whatsapp bot, play games and colect the point",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,6 @@
     "firebase": "^9.22.0",
     "firebase-admin": "^11.8.0",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.20.0"
+    "whatsapp-web.js": "^1.21.0"
   }
 }
