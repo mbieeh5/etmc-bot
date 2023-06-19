@@ -37,7 +37,6 @@ const regexPBuyPoke = /^!buy\s+(\w+)\s+(\d+)$/;
 const regexRibut = /^!ribut\s(.+)/;
 const regexNama = /^!nama\s(.+)/;
 const regexInfo = /^!info\s(.+)/;
-const regexCommand = /^!addcommand\s(.+)/;
 const regexMabar = /^!mabar\s(.+)/;
 
 client.on('message', async (message) => {
@@ -57,6 +56,7 @@ client.on('message', async (message) => {
     const RefNama = pointRef.child(sanitizedSender).child('nama');
     const RefPoint = pointRef.child(sanitizedSender).child('point');
     const RefRep = pointRef.child(sanitizedSender).child('reputasi');
+    const RefRepOld = pointRef.child(sanitizedSender).child('reputasiS1');
     const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
     const RefPoke = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokeballs');
     const RefGacoan = PokemonRef.child(sanitizedSender).child('pokemon').child('gacoan');
@@ -185,6 +185,112 @@ if (pesan) {
             message.reply(`priiiit point -25.000, Reputasi -100.\nsisa point: ${sisaPo}\nReputasi: ${sisaRe}`);
         }, 1500);
     }
+/* ADMIN COMMAND */
+if(sanitizedSender === '6285210306474_c_us' || sanitizedSender === '628973997575_c_us'){
+  const pesanAdmin = message.body;
+  // reset season
+  if (pesanAdmin.startsWith('%rS')) {
+    message.reply('Welcome To Season 2 Guys\nPoint : +50.000');
+    pointRef.once('value', (snapshot) => {
+        const penggunaData = snapshot.val();
+        if (penggunaData) {
+            Object.entries(penggunaData).forEach(([randomkey, data]) => {
+                const currentReputasi = data.reputasi || 0;
+                let newReputasi = currentReputasi;
+                if (currentReputasi < 0) {
+                    newReputasi += 100;
+                } else if (currentReputasi >= 1 && currentReputasi <= 100) {
+                    newReputasi -= 50;
+                } else if (currentReputasi >= 101 && currentReputasi <= 1999) {
+                    newReputasi -= 100;
+                } else if (currentReputasi >= 2000) {
+                    newReputasi -= 1000;
+                }
+                pointRef.child(randomkey).child('reputasiS1').set(currentReputasi);
+                pointRef.child(randomkey).child('reputasi').set(newReputasi);
+            });
+        } else {
+            message.reply('Database is empty');
+        }
+    });
+
+    pointRef.once('value', (snapshot) => {
+      const penggunaData = snapshot.val();
+      if (penggunaData) {
+          Object.entries(penggunaData).forEach(([randomkey, data]) => {
+              const currentPoint = data.point || 0;
+              const pointAdded = currentPoint + 50000;
+              pointRef.child(randomkey).child('point').set(pointAdded);
+          });
+        } else {
+          message.reply('Database is empty');
+        }
+      });
+}
+
+  // reset Point
+  if(pesanAdmin.startsWith('%rP')){
+    const point0 = parseInt('0');
+    message.reply('Reset Point Done');
+    pointRef.once('value', (snapshot) => {
+        const penggunaData = snapshot.val();
+        if (penggunaData) {
+            Object.entries(penggunaData).forEach(([randomkey, data]) => {
+                pointRef.child(randomkey).child('point').set(point0);
+            });
+          } else {
+            message.reply('Database is empty');
+          }
+        });
+  }
+  //addPoint
+  if(pesanAdmin.startsWith('%addP')){
+    const param1 = pesanAdmin.split(' ')[1];
+    const param2 = pesanAdmin.split(' ')[2];
+    const param2ParseInt = parseInt(param2, 10);
+    const nomortanpa = param1.replace(/@/g, "");
+    const nomorLengkap = nomortanpa+"_c_us";
+    pointRef.child(nomorLengkap).child('point').once('value', async (snapshot) => {
+      const point = snapshot.val() || 0;
+      const pointAdded = point + param2ParseInt;
+      await pointRef.child(nomorLengkap).child('point').set(pointAdded);
+    });
+    message.reply(`Point added ${param2.toLocaleString('id-ID',{minimumFractionDigits: 0})} to : ${param1}`);
+  }
+  //addReputasi
+  if(pesanAdmin.startsWith('%addR')){
+    const param1 = pesanAdmin.split(' ')[1];
+    const param2 = pesanAdmin.split(' ')[2];
+    const param2ParseInt = parseInt(param2, 10);
+    const nomortanpa = param1.replace(/@/g, "");
+    const nomorLengkap = nomortanpa+"_c_us";
+    pointRef.child(nomorLengkap).child('reputasi').once('value', async (snapshot) => {
+      const point = snapshot.val() || 0;
+      const pointAdded = point + param2ParseInt;
+        await pointRef.child(nomorLengkap).child('reputasi').set(pointAdded);
+    });
+    message.reply(`Reputation added ${param2} to : ${param1}`)
+  }
+  //addPoint for users
+  if (pesanAdmin.startsWith('%addAP')) {
+    const param1 = parseInt(pesanAdmin.split(' ')[1]);
+    pointRef.once('value', (snapshot) => {
+        const penggunaData = snapshot.val();
+        if (penggunaData) {
+            Object.entries(penggunaData).forEach(([randomkey, data]) => {
+                const currentPoint = data.point || 0;
+                const pointAdded = currentPoint + param1;
+                pointRef.child(randomkey).child('point').set(pointAdded);
+            });
+          } else {
+            message.reply('Database is empty');
+          }
+        });
+    message.reply(`Point added ${param1.toLocaleString('id-ID', { minimumFractionDigits: 0 })} to all members`);
+}
+
+}
+
 
     //Command
     if (pesan === '!help' || pesan === '!bot'){
@@ -429,6 +535,7 @@ for (const threshold of thresholds) {
             pointAdded.once('value', async (snapshot) => {
               const poin = snapshot.val() || 0;
               const pointPerHuruf = pesan.length;
+              console.log(pointPerHuruf);
               if(pointPerHuruf === 0){
                 const pointJikaNol = poin + 1;
                 await pointRef.child(sanitizedSender).child('point').set(pointJikaNol);
@@ -445,6 +552,7 @@ if (pesan === '!stat') {
     let repu = "";
     let point = "";
     let tier = "";
+    let tierOld = "";
     let nama = "";
     //Reputasi
     RefRep.once('value', async (snapshot) => {
@@ -469,13 +577,41 @@ if (pesan === '!stat') {
         tier = "S0N-0F-S4TAN"
       } else if (reputasi <= 1000){
         tier = "--🔥_CONQUEROR_🔥--";
-      } else if (reputasi >= 1001){
+      } else if (reputasi >= 2000){
         tier = "--👑GOD👑--";
       }else{
         tier = "Anak💀Haram"
       }
-      
       repu = await reputasi.toString();
+    });
+    //Reputasi old
+    RefRepOld.once('value', async (snapshot) => {
+      const reputasiOld = snapshot.val() || 0;
+      if (reputasiOld <= 0) {
+        tierOld = "💀BOCAH TOXIC💀";
+    } else if (reputasiOld <= 10) {
+        tierOld = "--_Bronze_--";
+    } else if (reputasiOld <= 20) {
+        tierOld = "--_Silver_--";
+    } else if (reputasiOld <= 30) {
+        tierOld = "--_Gold_--";
+    } else if (reputasiOld <= 50) {
+        tierOld = "--_Platinum_--";
+    } else if (reputasiOld <= 100) {
+        tierOld = "--💎_Diamond_💎--";
+    } else if (reputasiOld <= 200) {
+        tierOld = "--♚_CROWN_♚--";
+    } else if (reputasiOld <= 500) {
+        tierOld = "--⭐_ACE_⭐--";
+    } else if (reputasiOld === 666) {
+        tierOld = "S0N-0F-S4TAN";
+    } else if (reputasiOld <= 1000) {
+        tierOld = "--🔥_CONQUEROR_🔥--";
+    } else if (reputasiOld >= 2000) {
+        tierOld = "--👑GOD👑--";
+    } else {
+        tierOld = "Anak💀Haram";
+    }
     });
     //point
     RefPoint.once('value', async (snapshot) => {
@@ -483,13 +619,118 @@ if (pesan === '!stat') {
         point = await poin.toLocaleString('id-ID',{minimumFractionDigits: 0});
     });
     RefNama.once('value', async (snapshot) => {
-
-    })
+        const name = snapshot.val() || '';
+        nama = name || 'Nama Mu Masih kosong';
+    });
 
     setTimeout(() => {
-        message.reply(`*${tier}*\n\nPoint Kamu: *${point}*\nReputasi: *${repu}*`);
+        message.reply(`Nama: ${nama}\nTier Tertinggi: ${tierOld}\n\n*${tier}*\nPoint Kamu: *${point}*\nReputasi: *${repu}*`);
     },1000)
 }
+// LeaderBoard
+// LeaderBoard
+if (pesan.startsWith('!rank')) {
+  const param1 = pesan.split(' ')[1];
+  if (param1 === 'point') {
+      new Promise((resolve, reject) => {
+          pointRef.once('value', (snapshot) => {
+              const penggunaData = snapshot.val();
+              if (penggunaData) {
+                  const point = Object.entries(penggunaData)
+                      .sort(([, a], [, b]) => b.point - a.point)
+                      .map(([randomkey, data], index) => `${index + 1}. Nama: ${data.nama || 'anak bapa'}\nPoint: ${data.point}\n`);
+                  const pointList = point.join('\n');
+                  resolve(pointList);
+              } else {
+                  reject('Data Reputasi kosong');
+              }
+          });
+      }).then((pointList) => {
+          message.reply(`Point Tertinggi:\n${pointList}`);
+      }).catch((error) => {
+          message.reply(error);
+      });
+  } else {
+      new Promise((resolve, reject) => {
+          pointRef.once('value', (snapshot) => {
+              const penggunaData = snapshot.val();
+              if (penggunaData) {
+                  const ranks = Object.entries(penggunaData)
+                      .sort(([, a], [, b]) => b.reputasi - a.reputasi)
+                      .map(([randomkey, data], index) => {
+                          let tier = '';
+                          if (data.reputasi <= 0) {
+                              tier = "💀BOCAH TOXIC💀";
+                          } else if (data.reputasi <= 10) {
+                              tier = "--_Bronze_--";
+                          } else if (data.reputasi <= 20) {
+                              tier = "--_Silver_--";
+                          } else if (data.reputasi <= 30) {
+                              tier = "--_Gold_--";
+                          } else if (data.reputasi <= 50) {
+                              tier = "--_Platinum_--";
+                          } else if (data.reputasi <= 100) {
+                              tier = "--💎_Diamond_💎--";
+                          } else if (data.reputasi <= 200) {
+                              tier = "--♚_CROWN_♚--";
+                          } else if (data.reputasi <= 500) {
+                              tier = "--⭐_ACE_⭐--";
+                          } else if (data.reputasi === 666) {
+                              tier = "S0N-0F-S4TAN";
+                          } else if (data.reputasi <= 1000) {
+                              tier = "--🔥_CONQUEROR_🔥--";
+                          } else if (data.reputasi >= 2000) {
+                              tier = "--👑GOD👑--";
+                          } else {
+                              tier = "Anak💀Haram";
+                          }
+
+                          let tierOld = '';
+                          if (data.reputasiS1 <= 0) {
+                              tierOld = "💀BOCAH TOXIC💀";
+                          } else if (data.reputasiS1 <= 10) {
+                              tierOld = "--_Bronze_--";
+                          } else if (data.reputasiS1 <= 20) {
+                              tierOld = "--_Silver_--";
+                          } else if (data.reputasiS1 <= 30) {
+                              tierOld = "--_Gold_--";
+                          } else if (data.reputasiS1 <= 50) {
+                              tierOld = "--_Platinum_--";
+                          } else if (data.reputasiS1 <= 100) {
+                              tierOld = "--💎_Diamond_💎--";
+                          } else if (data.reputasiS1 <= 200) {
+                              tierOld = "--♚_CROWN_♚--";
+                          } else if (data.reputasiS1 <= 500) {
+                              tierOld = "--⭐_ACE_⭐--";
+                          } else if (data.reputasiS1 === 666) {
+                              tierOld = "S0N-0F-S4TAN";
+                          } else if (data.reputasiS1 <= 1000) {
+                              tierOld = "--🔥_CONQUEROR_🔥--";
+                          } else if (data.reputasiS1 >= 2000) {
+                              tierOld = "--👑GOD👑--";
+                          } else {
+                              tierOld = "Anak💀Haram";
+                          }
+
+                          return `${index + 1}. Nama: ${data.nama || 'anak bapa'}\nTier: ${tier}\nTier Season lalu: ${tierOld || tier}\n`;
+                      });
+
+                  const rankList = ranks.join('\n');
+                  resolve(rankList);
+              } else {
+                  reject('Data Reputasi kosong');
+              }
+          });
+      }).then((rankList) => {
+          message.reply(`Rank TerTinggi di Season 1:\n${rankList}`);
+      }).catch((error) => {
+          message.reply(error);
+      });
+  }
+}
+
+
+
 // Kirim point
 if (match1) {
   const parameter = match1[1];
@@ -806,6 +1047,11 @@ for(const threshold of thresholds){
     }
     break;
 }
+//LeaderBoard
+
+
+
+
 //POKEMON SYSTEM
   /* POKEBALLS*/
   function usePokeball(){
@@ -1044,12 +1290,19 @@ if (pesan.startsWith('!setgacoan')) {
 if (pesan.startsWith('!fight')) {
   let p1 = [];
   let p2 = [];
+  let isFightInProgress = false; // Flag untuk menandakan apakah pertarungan sedang berlangsung
   const param1 = pesan.split(' ')[1];
   const RefGacoan2 = param1.replace(/@/g, '') + '_c_us';
   const RefGacoanP2 = PokemonRef.child(RefGacoan2).child('pokemon').child('gacoan');
   const RefRep2 = pointRef.child(RefGacoan2).child('reputasi');
 
   if (param1.length > 11) {
+    // Pengecekan apakah pertarungan sedang berlangsung
+    if (isFightInProgress) {
+      message.reply('Pertarungan sebelumnya belum selesai.');
+      return;
+    }
+
     RefGacoan.once('value', async (snapshot) => {
       const gacoanP1 = snapshot.val() || {};
       if (Object.keys(gacoanP1).length > 0) {
@@ -1070,13 +1323,12 @@ if (pesan.startsWith('!fight')) {
 
     setTimeout(async () => {
       if (p1.length > 0 && p2.length > 0) {
-        console.log(p1);
-        console.log(p2);
+        isFightInProgress = true; // Set flag menjadi true saat pertarungan dimulai
         message.reply(`Pertarungan antara ${p1[0].name} VS ${p2[0].name}`);
+        let P1HP = p1[0].hp;
+        let P2HP = p2[0].hp;
 
         const fightLoop = async () => {
-          let P1HP = p1[0].hp;
-          let P2HP = p2[0].hp;
           let winner = null;
           RefRep.once('value', async (snapshot) => {
             const val1 = snapshot.val() || 0;
@@ -1088,8 +1340,8 @@ if (pesan.startsWith('!fight')) {
               const repmenang2 = val2 + 100;
               const repKalah2 = val2 - 10;
 
-              const P1att = p1[0].attack / p2[0].defense * 15;
-              const P2att = p2[0].attack / p1[0].defense * 15;
+              const P1att = p1[0].attack / p1[0].defense * 15;
+              const P2att = p2[0].attack / p2[0].defense * 15;
               P1HP -= P2att;
               P2HP -= P1att;
               console.log(P1HP);
@@ -1099,22 +1351,21 @@ if (pesan.startsWith('!fight')) {
 
               if (P1HP > 0 && P2HP > 0) {
                 setTimeout(fightLoop, 1000);
-                //message.reply(`${p1[0].name} Menyerang dengan damage ${parseInt(P1att)}, dan ${p2[0].name} menyerang dengan damage ${parseInt(P2att)}`)
-                //message.reply(`HP ${p1[0].name}: ${parseInt(P1HP)}\nHP ${p2[0].name}: ${parseInt(P2HP)}`)
               } else {
                 if (P1HP <= 0 && P2HP <= 0) {
                   message.reply(`Pertarungan berakhir dengan hasil seri!`);
                 } else if (P1HP <= 0) {
-                  await RefRep2.set(repmenang2)
-                  await RefRep.set(repKalah)
+                  await RefRep2.set(repmenang2);
+                  await RefRep.set(repKalah);
                   winner = p2[0].name;
                   message.reply(`Pertarungan berakhir! ${p2[0].name} adalah pemenangnya!`);
                 } else {
-                  await RefRep.set(repmenang)
-                  await RefRep2.set(repKalah2)
+                  await RefRep.set(repmenang);
+                  await RefRep2.set(repKalah2);
                   winner = p1[0].name;
                   message.reply(`Pertarungan berakhir! ${p1[0].name} adalah pemenangnya!`);
                 }
+                isFightInProgress = false; // Set flag menjadi false setelah pertarungan selesai
               }
             });
           });
@@ -1129,8 +1380,8 @@ if (pesan.startsWith('!fight')) {
     message.reply('tag aja dlu orng nya');
   }
 }
-  
+
   
   //end of the line
 });
-client.initialize();  
+client.initialize();
