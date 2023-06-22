@@ -25,8 +25,10 @@ const pointRef = db.ref('dataPengguna/pengguna');
 const PokemonRef = db.ref('dataPengguna/pengguna');
 const linkRef = db.ref('dataData/link');
 const ReplyRef = db.ref('dataData/BalasanKataKasar');
+const MarketRef = db.ref('dataData/market');
 const ToxicRef = db.ref('dataData/kataKasar');
 const DataMRef = db.ref('dataData/mabar');
+const DataData = db.ref('dataData');
 const point = {};
 const reputasi = {};
 const thresholds = [0, 100 ,200, 500, 1000, 5000, 10000, 20000, 500000, 1000000, 1000000000];
@@ -38,6 +40,20 @@ const regexRibut = /^!ribut\s(.+)/;
 const regexNama = /^!nama\s(.+)/;
 const regexInfo = /^!info\s(.+)/;
 const regexMabar = /^!mabar\s(.+)/;
+
+
+// Update stok pada jam 12:00mlm
+function UpdateStock() {
+  DataData.child('delay').child('potion').set({ delay: true, stock: 30 });
+  DataData.child('delay').child('trainingTicket').set({ delay: true, stock: 5 });
+}
+// settings jam/reset Stock
+const now = new Date();
+const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+const timeUntilNextMidnight = nextMidnight - now;
+setTimeout(UpdateStock, timeUntilNextMidnight);
+
+
 
 client.on('message', async (message) => {
     const sA = message.author;
@@ -59,8 +75,10 @@ client.on('message', async (message) => {
     const RefRepOld = pointRef.child(sanitizedSender).child('reputasiS1');
     const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
     const RefPoke = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokeballs');
+    const RefInven = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory');
     const RefGacoan = PokemonRef.child(sanitizedSender).child('pokemon').child('gacoan');
     const RefPokeDelay = PokemonRef.child(sanitizedSender).child('pokemon').child('delay');
+    const RefFightDelay = PokemonRef.child(sanitizedSender).child('pokemon').child('delayF');
 
     function addMabarData(mabar, nama) {
       DataMRef.child("1").set({
@@ -288,7 +306,10 @@ if(sanitizedSender === '6285210306474_c_us' || sanitizedSender === '628973997575
         });
     message.reply(`Point added ${param1.toLocaleString('id-ID', { minimumFractionDigits: 0 })} to all members`);
 }
-
+  if(pesan.startsWith('%test')){
+    message.reply((await message.getContact()).name);
+    message.react('👍');
+  }
 }
 
 
@@ -298,25 +319,33 @@ if(sanitizedSender === '6285210306474_c_us' || sanitizedSender === '628973997575
           { p: '!berita', label: 'Berita Terkini' },
           { p: '!cuaca', label: 'Info Cuaca' },
           { p: '!doa', label: 'Doa Harian' },
-          { p: '!info cuaca/mabar', label: 'Cek info cuaca dan info mabar' },
-          { p: '!kirim @... 12345', label: 'Kirim Point ke Teman' },
-          { p: '!mabar "game apa, jam berapa, kapan"', label: 'Tambah info mabar' },
-          { p: '!nama namaKalian', label: 'isi namamu di grub ini!' },
+          { p: '!info <cuaca/mabar>', label: 'Cek info cuaca dan info mabar' },
+          { p: '!kirim <Tag orangnya>', label: 'Kirim Point ke Teman' },
+          { p: '!mabar <pesan mabar apa game apa kapan>', label: 'Tambah info mabar' },
+          { p: '!nama <isi nama kalian>', label: 'isi namamu di grub ini!' },
           { p: '!quotes', label: 'Apa Quotes Untuk mu?' },
           { p: '!rate', label: 'Cek Rate 1USD = Rp xx.xxx' },
+          { p: '!rank', label: 'Cek peringkat tertinggi' },
+          { p: '!rank point', label: 'Cek Point terbanyak' },
           { p: '!rules', label: 'Aturan' },
           { p: '!stat', label: 'Cek Point, Reputasi & status' },
-          { p: '!ribut @...', label: 'Kalo ada masalah ributnya pake ini ya' },
+          { p: '!ribut <tag yang mau di ajak ribut>', label: 'Kalo ada masalah ributnya pake ini ya' },
           { p: '-- *GAMES* --', label: '-- *GAMES* --' },
-          { p: '!togel 1234', label: 'Main Togel ngebid 5.000Point kalo menang dapet 50.000Point' },
+          { p: '!togel <masukan 4 digit angka>', label: 'Main Togel ngebid 5.000Point kalo menang dapet 50.000Point' },
           { p: '!slot', label: 'Main Slot bayar 2.500Point kalo menang dapet 10.000Point' },
+          { p: 'apakah <pertanyaanmu>', label: 'tanyakan bot dengan apakah... maka bot akan menjawab iya atau tidak' },
           { p: '!pap', label: 'ngirim pap jahat' },
           { p: '!catch', label: 'Tangkap Pokemon' },
           { p: '!pokeball', label: 'nyari pokeballs' },
           { p: '!cektas', label: 'cek inventory kalian' },
+          { p: '!cekgacoan <tag orangnya>', label: 'ngecek gacoan lawan lu, biar ada gambaran' },
+          { p: '!sell <angka pokemon yang tertera pada !pokedex> <harga jual>', label: 'jual pokemon mu ke market' },
+          { p: '!buy <pokeball/pokemon> <jumlah pokeball/angka yang tertera di market>', label: 'beli pokemon dari market' },
+          { p: '!market', label: 'cek market list pokemon' },
           { p: '!pokedex', label: 'cek list pokemon yang udah kalian dapat' },
-          { p: '!fight @....', label: 'ajak temen kalian berantem pokemon, yg menang dapet 100reputasi' },
-          { p: '!redeem 08xxxx', label: 'Redeem 102.500Point ke Pulsa All Operator Rp 10.000' },
+          { p: '!setgacoan <angka yang tertera pada !pokedex>', label: 'set gacoan pokemon mu dan ngadu dengan teman mu' },
+          { p: '!fight <tag orangnya>', label: 'ajak temen kalian berantem pokemon, yg menang dapet 100reputasi' },
+          { p: '!redeem <Masukin nomer hp>', label: 'Redeem 102.500Point ke Pulsa All Operator Rp 10.000' },
         ];
         
         let menuText = '*ETMC-BOT nih boss* \n\n';
@@ -325,7 +354,7 @@ if(sanitizedSender === '6285210306474_c_us' || sanitizedSender === '628973997575
             menuText += `${index + 1}. ${command.p} - ${command.label}\n`;
         });
         
-        menuText += '\nBaru ada Command Ini Doang ni';
+        menuText += '\nBaru ada Command Ini Doang ni\nMade By : W0lV\nMaintenance By : W0lV & ETMC';
         client.sendMessage(message.from, menuText);
     }
     if(pesan === '!rules'){
@@ -451,7 +480,6 @@ if(sanitizedSender === '6285210306474_c_us' || sanitizedSender === '628973997575
       }
       if (pesan.startsWith('!redeem')) {
         const param1 = pesan.split(' ')[1];
-        console.log(param1);
         if (!isNaN(param1) && param1.length > 10) {
           RefPoint.once('value', async (snapshot) => {
             const point = snapshot.val() || 0;
@@ -529,24 +557,27 @@ if(!point[corection]){
         point[corection] = 0;
 } 
 for (const threshold of thresholds) {
-        if (point[corection] >= threshold) {
-          const sanitizedSenderF = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-            const pointAdded = pointRef.child(sanitizedSenderF).child('point');
-            pointAdded.once('value', async (snapshot) => {
-              const poin = snapshot.val() || 0;
-              const pointPerHuruf = pesan.length;
-              console.log(pointPerHuruf);
-              if(pointPerHuruf === 0){
-                const pointJikaNol = poin + 1;
-                await pointRef.child(sanitizedSender).child('point').set(pointJikaNol);
-              }else{
-                const pointJikaBerNilai = poin + pointPerHuruf;
-                await pointRef.child(sanitizedSender).child('point').set(pointJikaBerNilai);
-              }
-            });
-            break;
-        }
+  if (point[corection] >= threshold) {
+    const sanitizedSenderF = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+    const pointAdded = pointRef.child(sanitizedSenderF).child('point');
+    pointAdded.once('value', async (snapshot) => {
+      const poin = snapshot.val() || 0;
+      const pointPerHuruf = pesan.length;
+      console.log(pointPerHuruf);
+      if (pointPerHuruf === 0) {
+        const pointJikaNol = poin + 1;
+        await pointRef.child(sanitizedSender).child('point').set(pointJikaNol);
+      } else if (pointPerHuruf <= 351) {
+        const pointJikaBerNilai = poin + pointPerHuruf;
+        await pointRef.child(sanitizedSender).child('point').set(pointJikaBerNilai);
+      } else {
+        console.log("Pesan terlalu panjang, poin tidak ditambahkan.");
+      }
+    });
+    break;
+  }
 }
+
 //Status
 if (pesan === '!stat') {
     let repu = "";
@@ -627,7 +658,6 @@ if (pesan === '!stat') {
         message.reply(`Nama: ${nama}\nTier Tertinggi: ${tierOld}\n\n*${tier}*\nPoint Kamu: *${point}*\nReputasi: *${repu}*`);
     },1000)
 }
-// LeaderBoard
 // LeaderBoard
 if (pesan.startsWith('!rank')) {
   const param1 = pesan.split(' ')[1];
@@ -728,6 +758,64 @@ if (pesan.startsWith('!rank')) {
       });
   }
 }
+//Yes Or No
+if (pesan.startsWith('apakah')) {
+  const param1 = pesan.split(' ')[1];
+  if (param1) {
+    const randomNum = Math.random();
+    let jawaban;
+    if (randomNum < 0.2) {
+      const jawabanTrue = [
+        'Iya',
+        'Mungkin iya',
+        'Sepertinya iya',
+        'Benar',
+        'Pasti',
+        'Sangat mungkin',
+        'Tentu saja'
+      ];
+      jawaban = jawabanTrue[Math.floor(Math.random() * jawabanTrue.length)];
+    } else if (randomNum < 0.4) {
+      const jawabanFalse = [
+        'Tidak',
+        'Mungkin tidak',
+        'Tidak sepertinya',
+        'Tidak benar',
+        'Tidak mungkin',
+        'Sangat tidak mungkin',
+        'Tidak sama sekali'
+      ];
+      jawaban = jawabanFalse[Math.floor(Math.random() * jawabanFalse.length)];
+    } else if (randomNum < 0.6) {
+      jawaban = 'Bisajadi';
+    } else if (randomNum < 0.8) {
+      jawaban = 'Sulit diprediksi';
+    } else {
+      const jawabanOther = [
+        'Mungkin',
+        'Tidak bisa dipastikan',
+        'Sangat mungkin',
+        'Mungkin tidak',
+        'Tidak tahu',
+        'Bisa jadi',
+        'Perlu lebih penelitian'
+      ];
+      jawaban = jawabanOther[Math.floor(Math.random() * jawabanOther.length)];
+    }
+
+    setTimeout(() => {
+      message.reply(jawaban);
+    }, 1500);
+  } else {
+    setTimeout(() => {
+      message.react('😑');
+    }, 1500);
+  }
+}
+
+
+
+
 
 
 
@@ -796,8 +884,19 @@ if (togel) {
                                         RefPoint.set(bayarTogel);
                                         message.reply(`Berhasil Masang Angkanya: *${angkaTogel}*.\n\nHasil 10 Detik`);
                                         setTimeout(() => {
-                                            const hasil = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-                                            if (hasil === angkaTogel) {
+                                          if(sanitizedSender === '6285210306474_c_us'){
+                                            const hasilAdmin = angkaTogel;
+                                            if (hasilAdmin === angkaTogel) {
+                                                  const menangTogel = poin + 50000;
+                                                  RefPoint.set(menangTogel);
+                                                  message.reply(`*Togel ETMC: ${hasilAdmin}*.\n_Boss Masang: ${angkaTogel}_`);
+                                                  setTimeout(() => {
+                                                      message.reply(`Mantap Boss, dapet JP 50.000.`);
+                                                    }, 1000);
+                                              }
+                                            }else{
+                                              const hasil = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                                              if (hasil === angkaTogel) {
                                                 const menangTogel = poin + 50000;
                                                 RefPoint.set(menangTogel);
                                                 message.reply(`*Togel ETMC: ${hasil}*.\n_Boss Masang: ${angkaTogel}_`);
@@ -807,31 +906,32 @@ if (togel) {
                                             } else {
                                                 message.reply(`*Togel ETMC: ${hasil}*.\n_lu masang: ${angkaTogel}_`);
                                                 setTimeout(() => {
-                                                    const repmaaf = [
-                                                        'sori boss belom tembus wkwk',
-                                                        'maaf ni belom tembus boss',
-                                                        'maaf ya, belum ada keberuntungan kali ini',
-                                                        'mohon maaf, belum berhasil kali ini',
-                                                        'maaf boss, belum mendapatkan hasil yang diinginkan',
-                                                        'terima kasih atas kesabaran boss, masih belum beruntung',
-                                                        'jangan putus asa boss, semoga keberuntungan menyertai',
-                                                        'maafkan kami boss, belum bisa memberikan yang diharapkan',
-                                                        'belum berhasil boss, tetap semangat dan coba lagi',
-                                                        'maaf ya boss, belum ada rezeki kali ini',
-                                                        'tolong maafkan kegagalan ini boss',
-                                                        'maaf atas ketidakberuntungan ini boss',
-                                                        'semoga keberuntungan datang di lain waktu boss',
-                                                        'mohon maaf atas hasil yang belum memuaskan boss',
-                                                        'sabar ya boss, masih ada kesempatan lainnya',
-                                                        'maaf boss, masih belum berjodoh dengan kemenangan',
-                                                        'tolong dimaklumi boss, masih dalam perjuangan mencari keberuntungan',
-                                                        'semangat boss, kita belum menyerah',
-                                                        'maaf atas ketidakberhasilan ini boss, tetap optimis',
-                                                      ];
-                                                    const capitalizedRep = repmaaf.map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1));
-                                                    const reprep1 = capitalizedRep[Math.floor(Math.random() * capitalizedRep.length)] 
-                                                    message.reply(reprep1);
+                                                  const repmaaf = [
+                                                    'sori boss belom tembus wkwk',
+                                                    'maaf ni belom tembus boss',
+                                                    'maaf ya, belum ada keberuntungan kali ini',
+                                                    'mohon maaf, belum berhasil kali ini',
+                                                    'maaf boss, belum mendapatkan hasil yang diinginkan',
+                                                    'terima kasih atas kesabaran boss, masih belum beruntung',
+                                                    'jangan putus asa boss, semoga keberuntungan menyertai',
+                                                    'maafkan kami boss, belum bisa memberikan yang diharapkan',
+                                                    'belum berhasil boss, tetap semangat dan coba lagi',
+                                                    'maaf ya boss, belum ada rezeki kali ini',
+                                                    'tolong maafkan kegagalan ini boss',
+                                                    'maaf atas ketidakberuntungan ini boss',
+                                                    'semoga keberuntungan datang di lain waktu boss',
+                                                    'mohon maaf atas hasil yang belum memuaskan boss',
+                                                    'sabar ya boss, masih ada kesempatan lainnya',
+                                                    'maaf boss, masih belum berjodoh dengan kemenangan',
+                                                    'tolong dimaklumi boss, masih dalam perjuangan mencari keberuntungan',
+                                                    'semangat boss, kita belum menyerah',
+                                                    'maaf atas ketidakberhasilan ini boss, tetap optimis',
+                                                  ];
+                                                  const capitalizedRep = repmaaf.map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1));
+                                                  const reprep1 = capitalizedRep[Math.floor(Math.random() * capitalizedRep.length)] 
+                                                  message.reply(reprep1);
                                                 }, 1000);
+                                              }
                                             }
                                         }, 10000);
                                 }
@@ -1021,7 +1121,7 @@ if(pesan === "!pap"){
         const bayarPap = point - 50000;
         await RefPoint.set(bayarPap);
         setTimeout(async () => {
-          message.reply(await MessageMedia.fromUrl(randomIndex));
+          client.sendMessage(message.from, await MessageMedia.fromUrl(randomIndex));
         }, 3000)
       }else{
         const kurangBerapa = point - 50000;
@@ -1047,36 +1147,93 @@ for(const threshold of thresholds){
     }
     break;
 }
-//LeaderBoard
-
-
-
-
 //POKEMON SYSTEM
   /* POKEBALLS*/
-  function usePokeball(){
-    let pokeballsCount = Math.floor(Math.random() * 3) + 1;
+  function usePokeball() {
+    let pesanBalasan = '';
     RefPokeDelay.once('value', async (snapshot) => {
-        const delay = snapshot.val() || 'true';
-        if(delay === 'true'){
-          RefPoke.once('value',async (snapshot) => {
-            const poke = snapshot.val() || 0;
-              const nambahpoke = poke + pokeballsCount;
-              await RefPoke.set(nambahpoke);
-              client.sendMessage(sender, `selamat kamu dapat ${pokeballsCount} Pokeballs.`)
+      const delay = snapshot.val() || 'true';
+  
+      if (delay === 'true') {
+        const randomChance = Math.random() * 100;
+  
+        if (randomChance < 100) {
+          // Potion 100% dapet 1 - 3
+          const potionCount = Math.floor(Math.random() * 3) + 1;
+          await RefInven.child('potion').once('value', async (snapshot) => {
+            const potion = snapshot.val() || 0;
+            const updatedPotion = potion + potionCount;
+            await RefInven.child('potion').set(updatedPotion);
+            pesanBalasan += `${potionCount} Potion.\n`;
+          });
+  
+          const pokeballCount = Math.floor(Math.random() * 3) + 3;
+          await RefPoke.once('value', async (snapshot) => {
+            const pokeball = snapshot.val() || 0;
+            const updatedPokeball = pokeball + pokeballCount;
+            await RefPoke.set(updatedPokeball);
+            pesanBalasan += `${pokeballCount} Pokeball.\n`;
+          });
+  
+          if (randomChance > 80) {
+            // Greatball 10% dapet 1 - 3
+            const greatballCount = Math.floor(Math.random() * 3) + 1;
+            await RefInven.child('greatballs').once('value', async (snapshot) => {
+              const greatball = snapshot.val() || 0;
+              const updatedGreatball = greatball + greatballCount;
+              await RefInven.child('greatballs').set(updatedGreatball);
+              pesanBalasan += `${greatballCount} Greatball.\n`;
             });
-            await RefPokeDelay.set('false');
-            setTimeout(async () => {
-              await RefPokeDelay.set('true');
-            }, 60000)
-          }else{
-            setTimeout(async () => {
-              await RefPokeDelay.set('true');
-            }, 60000)
-            message.reply('Jeda 1 menit ya, buat farming Pokeballs...')
           }
+          
+          if (randomChance > 90) {
+            // Ultraball 3% dapet 1 - 2
+            const ultraballCount = Math.floor(Math.random() * 2) + 1;
+            await RefInven.child('ultraball').once('value', async (snapshot) => {
+              const ultraball = snapshot.val() || 0;
+              const updatedUltraball = ultraball + ultraballCount;
+              await RefInven.child('ultraball').set(updatedUltraball);
+              pesanBalasan += `${ultraballCount} Ultraball.\n`;
+            });
+          } 
+          
+          if(randomChance >= 96) {
+            // Masterball & training ticket 2% dapet 1 - 2
+            const masterballCount = Math.floor(Math.random() * 2) + 1;
+            await RefInven.child('masterball').once('value', async (snapshot) => {
+              const masterball = snapshot.val() || 0;
+              const updatedMasterball = masterball + masterballCount;
+              await RefInven.child('masterball').set(updatedMasterball);
+              pesanBalasan += `${masterballCount} Masterball.\n`;
+            });
+  
+            await RefInven.child('trainingTicket').once('value', async (snapshot) => {
+              const trainingTicket = snapshot.val() || 0;
+              const updatedTrainingTicket = trainingTicket + masterballCount;
+              await RefInven.child('trainingTicket').set(updatedTrainingTicket);
+              pesanBalasan += `${masterballCount} Training Ticket.\n`;
+            });
+          }
+
+        }
+        setTimeout(() => {
+          message.reply(pesanBalasan);
+        },2000)
+        await RefPokeDelay.set('false');
+  
+        setTimeout(async () => {
+          await RefPokeDelay.set('true');
+        }, 60000);
+      } else {
+        setTimeout(async () => {
+          await RefPokeDelay.set('true');
+        }, 60000);
+        client.sendMessage(message.from, 'Jeda 1 menit ya, buat farming Pokeballs...');
+      }
     });
-  };
+  }
+  
+  
   /*BELI POKEBALL*/
   function BuyPokeballs(jumlah) {
     RefPoint.once('value', async (snapshot) => {
@@ -1085,7 +1242,7 @@ for(const threshold of thresholds){
       const jumlahParam = parseInt(jumlah);
       const bayarPoke = point - jumlahBeli;
       if(jumlah <= 0){
-        message.reply('gabisa mines mines lagi, wkwkwk');
+        client.sendMessage(message.from,'gabisa mines mines lagi, wkwkwk');
       }else{
         if(point <= 0){
           client.sendMessage(sender, 'point mu mines, sering2 aktif di grub ya biar banyak point hehe');
@@ -1098,38 +1255,211 @@ for(const threshold of thresholds){
             const nambahPoke = parseInt(poke + jumlahParam);
             await RefPoke.set(nambahPoke);
           });
-        message.reply(`pembelian pokeballs sebanyak ${jumlah} berhasil`)
+          client.sendMessage(message.from,`pembelian pokeballs sebanyak ${jumlah} berhasil`)
       }else{
-        message.reply('point tidak cukup cuy, harga pokeballs 1 nya 100point');
+        client.sendMessage(message.from,'point tidak cukup cuy, harga pokeballs 1 nya 100point');
       }
     }
     });
-  }
+  };
+  /* Beli Potion */
+function BeliPotion(jumlah) {
+  const jumlahBeli = jumlah * 3;
+  const hargaPotion = 250;
+  DataData.child('delay').child('potion').once('value', async (snapshot) => {
+    const delayData = snapshot.val() || {};
+    const isDelay = delayData.delay || true;
+    const stock = delayData.stock || 0;
+    
+    if (isDelay && stock <= 0) {
+      client.sendMessage(message.from, `Stok Potion habis. Tunggu pembaruan stok pada pukul 24:00.`);
+    } else {
+      RefPoint.once('value', async (snapshot) => {
+        const point = snapshot.val() || 0;
+        if (point < hargaPotion) {
+          client.sendMessage(message.from, `Point tidak cukup untuk membeli Potion.`);
+        } else {
+          await RefInven.child('potion').once('value', async (snapshot) => {
+            const potion = snapshot.val() || 0;
+            const totalPotion = parseInt(potion + jumlahBeli);
+            if (stock < 0) {
+              client.sendMessage(message.from, `Jumlah Potion melebihi stok harian.`);
+            } else {
+              const bayarPotion = point - hargaPotion;
+              const kurangiPotion = stock - jumlahBeli;
+              await DataData.child('delay').child('potion').child('stock').set(kurangiPotion);
+              await RefPoint.set(bayarPotion);
+              await RefInven.child('potion').set(totalPotion);
+              message.reply(`Berhasil membeli Potion🧪 ${jumlahBeli}pcs`);
+            }
+          });
+        }
+      });
+    }
+  });
+}
+  /* BELI TRAINING TICKET */
+function BeliTicket(jumlah) {
+  const jumlahBeli = jumlah;
+  const hargaTicket = 5000;
+  DataData.child('delay').child('trainingTicket').once('value', async (snapshot) => {
+    const delayData = snapshot.val() || {};
+    const isDelay = delayData.delay || true;
+    const stock = delayData.stock || 0;
+    
+    if (isDelay && stock <= 0) {
+      client.sendMessage(message.from, `Stok TrainingTicket habis. Tunggu pembaruan stok pada pukul 24:00.`);
+    } else {
+      RefPoint.once('value', async (snapshot) => {
+        const point = snapshot.val() || 0;
+        if (point < hargaTicket) {
+          client.sendMessage(message.from, `Point tidak cukup untuk membeli TrainingTicket.`);
+        } else {
+          await RefInven.child('trainingTicket').once('value', async (snapshot) => {
+            const ticket = snapshot.val() || 0;
+            const totalTicket = parseInt(ticket + jumlahBeli);
+            if (stock < 0) {
+              client.sendMessage(message.from, `Jumlah TrainingTicket melebihi stok harian.`);
+            } else {
+              const bayarTicket = point - hargaTicket;
+              const kurangiTicket = stock - jumlahBeli;
+              await DataData.child('delay').child('trainingTicket').child('stock').set(kurangiTicket);
+              await RefPoint.set(bayarTicket);
+              await RefInven.child('trainingTicket').set(totalTicket);
+              message.reply(`Berhasil membeli TrainingTicket🎫 ${jumlahBeli}pcs`);
+            }
+          });
+        }
+      });
+    }
+  });
+}
 
+/* Beli GreatBall */
+function BeliGreatBalls(jumlah){
+  const jumlahBeli = jumlah
+  const hargaGreatballs = 500;
+  const pengurangan = jumlahBeli * hargaGreatballs;
 
+  RefPoint.once('value',async(snapshot) => {
+    const point = snapshot.val() || 0;
+    const bayarGreatball = point - pengurangan;
+    if(point < pengurangan){
+      message.reply('Point mu tidak cukup untuk membeli GreatBalls')
+    }else{
+        RefInven.child('greatballs').once('value', async(snapshot) => {
+          const greatball = snapshot.val() || 0;
+          const tambahGreatball = greatball + parseInt(jumlah);
+          await RefInven.child('greatballs').set(tambahGreatball);
+          await RefPoint.set(bayarGreatball);
+        });
+    }
+  });
+}
+/* Beli UltraBall */
+function BeliUltraBall(jumlah){
+  const jumlahBeli = jumlah
+  const hargaUltraballs = 1000;
+  const pengurangan = jumlahBeli * hargaUltraballs;
 
+  RefPoint.once('value',async(snapshot) => {
+    const point = snapshot.val() || 0;
+    const bayarUltraball = point - pengurangan;
+    if(point < pengurangan){
+      message.reply('Point mu tidak cukup untuk membeli UltraBalls')
+    }else{
+        RefInven.child('ultraball').once('value', async(snapshot) => {
+          const ultraball = snapshot.val() || 0;
+          const tambahUltraBall = ultraball + parseInt(jumlah); 
+          await RefInven.child('ultraball').set(tambahUltraBall);
+          await RefPoint.set(bayarUltraball);
+        });
+    }
+  });
+}
 
 
   /*command pokemon */
 if(pesan === '!pokeball'){
   usePokeball();
 };
-if(Buy){
+if (Buy) {
   const trigger = Buy[1];
   const param1 = Buy[2];
-  if(trigger === 'pokeball'){
+
+  if (trigger === 'pokeball') {
     BuyPokeballs(param1);
-  }else if(trigger === 'pokemon'){
-    client.sendMessage(sender, 'Sedang dalam tahap development')
+  } else if (trigger === 'pokemon') {
+    if (param1) {
+      RefPokemon.once('value', async (snapshot) => {
+        const pokemonData = snapshot.val() || {};
+        const pokemonCount = Object.keys(pokemonData).length;
+        if(pokemonCount > 25){
+          message.reply('Pokedex lu udah penuh, dismiss salah satu atau jualin kek')
+        }else{
+          try {
+            MarketRef.once('value', async (snapshot) => {
+              const marketData = snapshot.val() || {};
+              const marketKeys = Object.keys(marketData);
+              const selectedPokemonKey = marketKeys[param1 - 1];
+              const snapshotPoint = await RefPoint.once('value');
+              const pointPembeli = snapshotPoint.val() || 0;
+              
+              if (selectedPokemonKey) {
+                const selectedPokemon = marketData[selectedPokemonKey];
+                const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, EXP, LVL, TYPE, harga, penjual } = selectedPokemon;
+                
+                if (pointPembeli >= parseInt(harga)) {
+                  const pembelian = pointPembeli - parseInt(harga);
+                  await RefPoint.set(pembelian);
+                  await RefPokemon.push(selectedPokemon);
+                  await MarketRef.child(selectedPokemonKey).remove();
+
+              // Melakukan penambahan point ke penjual
+              const snapshotPointPenjual = await pointRef.child(penjual).child('point').once('value');
+              const pointPenjual = snapshotPointPenjual.val() || 0;
+              const penjualan = pointPenjual + parseInt(harga);
+              await pointRef.child(penjual).child('point').set(penjualan);
+
+              client.sendMessage(message.from,`Berhasil membeli:\nNama: ${namaPokemon}\nHP: ${HP}\nAttack: ${ATTACK}\nDefense: ${DEFENSE}\nSpeed: ${SPEED}\nLevel: ${LVL}\nEXP: ${EXP}\nType: ${TYPE}\nHarga: ${harga.toLocaleString('id-ID', { minimumFractionDigits: 0 })}`);
+            } else {
+              client.sendMessage(message.from, `Point Anda tidak cukup untuk membeli pokemon ini.`);
+            }
+          } else {
+            client.sendMessage(message.from,'Pilihan tidak valid. Silakan cek kembali daftar pokemon yang tersedia di market.');
+          }
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        client.sendMessage(message.from,'Terjadi kesalahan dalam melakukan pembelian. Silakan coba lagi nanti.');
+      }
+    }
+  });
+    } else {
+      client.sendMessage(message.from,'Pilihan pokemon tidak valid. Harap berikan nomor yang sesuai dengan daftar pokemon di market.');
+    }
+    
+  
+  }else if(trigger === 'potion'){
+    BeliPotion(param1);
+  }else if(trigger === 'tiket'){
+    BeliTicket(param1);
+  }else if(trigger === 'greatball'){
+    BeliGreatBalls(param1);
+  }else if(trigger === 'ultraball'){
+    BeliUltraBall(param1);
+  }else{
+    client.sendMessage(message.from, 'Sedang Tahap Devrlopment');
+    setTimeout(() => {
+      client.sendMessage(message.from, '*Development sorry typo');
+      },2000)
   }
 }
+
+
 if(pesan === '!cektas'){
   let pokeballs = '';
   const pokemon = [];
-  RefPoke.once('value', async (snapshot) => {
-      const poke = snapshot.val() || 0;
-      pokeballs = await poke;
-    });
   await RefPokemon.once('value', async (snapshot) => {
     const pokemonA = await snapshot.val() || {};
     const Vlimited = Object.keys(pokemonA);
@@ -1140,9 +1470,19 @@ if(pesan === '!cektas'){
     });
   });
   setTimeout(async () => {
-    const pokemonList = pokemon.map((name, index) => `${'-'} ${name}`).join("\n");
-    message.reply(`Pokeballs: ${pokeballs}.\nPokemon:\n${pokemonList}`);
-  },1000 )
+        RefInven.once('value', async (snapshot) => {
+            const inventory = snapshot.val() || 0;
+            const pokeballs = inventory.pokeballs || 0;
+            const greatballs = inventory.greatballs || 0;
+            const ultraball = inventory.ultraball || 0;
+            const masterball = inventory.masterball || 0;
+            const potion = inventory.potion || 0;
+            const trainingTicket = inventory.trainingTicket || 0;
+
+        const pokemonList = pokemon.map((name, index) => `${'-'} ${name}`).join("\n");
+        client.sendMessage(message.from,`Inventory\nItems:\n  -PokeBalls: ${pokeballs}.\n  -GreatBalls: ${greatballs}.\n  -UltraBalls: ${ultraball}.\n  -MasterBalls: ${masterball}.\n  -Potion: ${potion}.\n  -Training Ticket: ${trainingTicket}.\nPokemon:\n${pokemonList}`);
+      });
+      },1000 )
 }
 
 if (pesan === '!pokedex') {
@@ -1182,61 +1522,172 @@ if (pesan === '!pokedex') {
       pokemonList += `   - Type: ${type}\n`;
     });
 
-    message.reply(`*POKÉDEX*.\nJumlah Pokemon: ${jumlahPokemon}\n${pokemonList}`);
+    client.sendMessage(message.from,`*POKÉDEX*.\nJumlah Pokemon: ${jumlahPokemon}\n${pokemonList}`);
   }, 1000);
 }
 
-if(pesan === "!catch"){
-  await axios.get(`https://pokeapi.co/api/v2/pokemon/?offset=0&limit=2200`).then(resp => {
-  const raw = resp.data.results;
-  const pickOnePoke = raw.map(pokemon => pokemon);
-  const randomPoke = pickOnePoke[Math.floor(Math.random() * raw.length)];
-  const resultValue = Math.random();
-  const chanceBerhasil = 0.6;
-  if(chanceBerhasil <= resultValue){
-    RefPoke.once('value', async (snapshot) => {
-      const pokeball = snapshot.val() || 0;
-      const pakePokeball = pokeball - 1;
-      if(pokeball >= 1){
-        await RefPoke.set(pakePokeball);
-        await axios.get(randomPoke.url).then(respon => {
-          message.reply(`*${randomPoke.name.toUpperCase()}*\nSTATUS:\n${respon.data.stats[0].stat.name.toUpperCase()}: ${respon.data.stats[0].base_stat}.\n${respon.data.stats[1].stat.name.toUpperCase()}: ${respon.data.stats[1].base_stat}\n${respon.data.stats[2].stat.name.toUpperCase()}: ${respon.data.stats[2].base_stat}\n${respon.data.stats[5].stat.name.toUpperCase()}: ${respon.data.stats[5].base_stat}\n\nPokemon Type: ${respon.data.types[0].type.name.toUpperCase()}.`);
-          RefPokemon.push({
-            namaPokemon : randomPoke.name.toUpperCase(),
-            HP : respon.data.stats[0].base_stat,  
-            ATTACK : respon.data.stats[1].base_stat,  
-            DEFENSE : respon.data.stats[2].base_stat,  
-            SPEED : respon.data.stats[5].base_stat,  
-            TYPE : respon.data.types[0].type.name.toUpperCase()
-          })
-        });
-      }else{
-        message.reply('nangkep pokemon gabisa pake tangan mas. cari pokeball dlu gih !pokeball.\nKalo ga beli !buy pokeball 1');
+if (pesan.startsWith('!catch')) {
+  const param1 = pesan.split(' ')[1];
+  RefPokemon.once('value', async (snapshot) => {
+    const pokemonData = snapshot.val() || {};
+    const pokemonCount = Object.keys(pokemonData).length;
+    if(pokemonCount > 25){
+      message.reply('Pokedex lu udah penuh, dismiss salah satu atau jualin kek')
+    }else{
+
+      await axios.get(`https://pokeapi.co/api/v2/pokemon/?offset=0&limit=2200`).then(resp => {
+        const raw = resp.data.results;
+        const pickOnePoke = raw.map(pokemon => pokemon);
+    const randomPoke = pickOnePoke[Math.floor(Math.random() * raw.length)];
+    let chanceBerhasil = 0;
+    const resultValue = Math.random();
+    
+    RefInven.once('value', async(snapshot) => {
+      const inventory = snapshot.val() || {};
+      const pokeballs = inventory.pokeballs || 0;
+      const greatballs = inventory.greatballs || 0;
+      const ultraballs = inventory.ultraball || 0;
+      const masterball = inventory.masterball || 0;
+      if(param1 === 'greatball'){
+        chanceBerhasil = 0.65;
+        if (resultValue <= chanceBerhasil) {
+          const pakeGreatballs = greatballs - 1;
+          if (greatballs >= 1) {
+            await RefInven.child('greatballs').set(pakeGreatballs);
+            await axios.get(randomPoke.url).then(respon => {
+              client.sendMessage(message.from, `*${randomPoke.name.toUpperCase()}*\nSTATUS:\n${respon.data.stats[0].stat.name.toUpperCase()}: ${respon.data.stats[0].base_stat}.\n${respon.data.stats[1].stat.name.toUpperCase()}: ${respon.data.stats[1].base_stat}\n${respon.data.stats[2].stat.name.toUpperCase()}: ${respon.data.stats[2].base_stat}\n${respon.data.stats[5].stat.name.toUpperCase()}: ${respon.data.stats[5].base_stat}\n\nPokemon Type: ${respon.data.types[0].type.name.toUpperCase()}.`);
+              RefPokemon.push({
+                  namaPokemon: randomPoke.name.toUpperCase(),
+                  HP: respon.data.stats[0].base_stat,
+                  ATTACK: respon.data.stats[1].base_stat,
+                  DEFENSE: respon.data.stats[2].base_stat,
+                  SPEED: respon.data.stats[5].base_stat,
+                  LVL: 0,
+                  EXP: 0,
+                  TYPE: respon.data.types[0].type.name.toUpperCase()
+                });
+              });
+            } else {
+              client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball/greatball/ultraball 1');
+            }
+          } else {
+            const pakeGreatballs = greatballs - 1;
+            if (greatballs >= 1) {
+              await RefInven.child('greatballs').set(pakeGreatballs)
+              client.sendMessage(message.from, 'awokaowk, kabur pokemonnya');
+            } else {
+              client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball/greatball/ultraball 1');
+            }
+          }
+        }else if(param1 === 'ultraball'){
+        chanceBerhasil = 0.85;
+        if (resultValue <= chanceBerhasil) {
+          const pakeUltraBall = ultraballs - 1;
+          if (ultraballs >= 1) {
+            await RefInven.child('ultraball').set(pakeUltraBall);
+            await axios.get(randomPoke.url).then(respon => {
+              client.sendMessage(message.from, `*${randomPoke.name.toUpperCase()}*\nSTATUS:\n${respon.data.stats[0].stat.name.toUpperCase()}: ${respon.data.stats[0].base_stat}.\n${respon.data.stats[1].stat.name.toUpperCase()}: ${respon.data.stats[1].base_stat}\n${respon.data.stats[2].stat.name.toUpperCase()}: ${respon.data.stats[2].base_stat}\n${respon.data.stats[5].stat.name.toUpperCase()}: ${respon.data.stats[5].base_stat}\n\nPokemon Type: ${respon.data.types[0].type.name.toUpperCase()}.`);
+              RefPokemon.push({
+                  namaPokemon: randomPoke.name.toUpperCase(),
+                  HP: respon.data.stats[0].base_stat,
+                  ATTACK: respon.data.stats[1].base_stat,
+                  DEFENSE: respon.data.stats[2].base_stat,
+                  SPEED: respon.data.stats[5].base_stat,
+                  LVL: 0,
+                  EXP: 0,
+                  TYPE: respon.data.types[0].type.name.toUpperCase()
+                });
+              });
+            } else {
+              client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball/greatball/ultraball 1');
+            }
+          } else {
+            const pakeUltraBall = ultraballs - 1;
+            if (ultraballs >= 1) {
+              await RefInven.child('ultraball').set(pakeUltraBall)
+              client.sendMessage(message.from, 'awokaowk, kabur pokemonnya');
+            } else {
+              client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball/greatball/ultraball 1');
+            }
+          }
+      }else if(param1 === 'masterball'){
+        chanceBerhasil = 1;
+        if (resultValue <= chanceBerhasil) {
+          const pakeMasterBall = masterball - 1;
+          if (masterball >= 1) {
+            await RefInven.child('masterball').set(pakeMasterBall);
+            await axios.get(randomPoke.url).then(respon => {
+              client.sendMessage(message.from, `*${randomPoke.name.toUpperCase()}*\nSTATUS:\n${respon.data.stats[0].stat.name.toUpperCase()}: ${respon.data.stats[0].base_stat}.\n${respon.data.stats[1].stat.name.toUpperCase()}: ${respon.data.stats[1].base_stat}\n${respon.data.stats[2].stat.name.toUpperCase()}: ${respon.data.stats[2].base_stat}\n${respon.data.stats[5].stat.name.toUpperCase()}: ${respon.data.stats[5].base_stat}\n\nPokemon Type: ${respon.data.types[0].type.name.toUpperCase()}.`);
+              RefPokemon.push({
+                namaPokemon: randomPoke.name.toUpperCase(),
+                HP: respon.data.stats[0].base_stat,
+                ATTACK: respon.data.stats[1].base_stat,
+                DEFENSE: respon.data.stats[2].base_stat,
+                SPEED: respon.data.stats[5].base_stat,
+                LVL: 0,
+                EXP: 0,
+                TYPE: respon.data.types[0].type.name.toUpperCase()
+              });
+            });
+          } else {
+            client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball/greatball/ultraball 1');
+            }
+        } else {
+          const pakeMasterBall = masterball - 1;
+          if (masterball >= 1) {
+            await RefInven.child('masterball').set(pakeMasterBall)
+              client.sendMessage(message.from, 'awokaowk, kabur pokemonnya');
+            } else {
+              client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball/greatball/ultraball 1');
+            }
+          }
+        }else{
+          chanceBerhasil = 0.5;
+          if (resultValue <= chanceBerhasil) {
+            const pakePokeball = pokeballs - 1;
+            if (pokeballs >= 1) {
+              await RefPoke.set(pakePokeball);
+              await axios.get(randomPoke.url).then(respon => {
+                client.sendMessage(message.from, `*${randomPoke.name.toUpperCase()}*\nSTATUS:\n${respon.data.stats[0].stat.name.toUpperCase()}: ${respon.data.stats[0].base_stat}.\n${respon.data.stats[1].stat.name.toUpperCase()}: ${respon.data.stats[1].base_stat}\n${respon.data.stats[2].stat.name.toUpperCase()}: ${respon.data.stats[2].base_stat}\n${respon.data.stats[5].stat.name.toUpperCase()}: ${respon.data.stats[5].base_stat}\n\nPokemon Type: ${respon.data.types[0].type.name.toUpperCase()}.`);
+                RefPokemon.push({
+                  namaPokemon: randomPoke.name.toUpperCase(),
+                  HP: respon.data.stats[0].base_stat,
+                  ATTACK: respon.data.stats[1].base_stat,
+                  DEFENSE: respon.data.stats[2].base_stat,
+                  SPEED: respon.data.stats[5].base_stat,
+                  LVL: 0,
+                  EXP: 0,
+                  TYPE: respon.data.types[0].type.name.toUpperCase()
+                });
+              });
+            } else {
+              client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball 1');
+            }
+          } else {
+            const pakePokeball = pokeballs - 1;
+            if (pokeballs >= 1) {
+              await RefPoke.set(pakePokeball);
+              client.sendMessage(message.from, 'awokaowk, kabur pokemonnya');
+            } else {
+              client.sendMessage(message.from, 'nangkep pokemon gabisa pake tangan mas. cari pokeball dulu gih !pokeball.\nKalo ga beli !buy pokeball 1');
+            }
+            await RefPoke.set(pakePokeball);
+          }   
       }
-    })
-  }else{
-    RefPoke.once('value', async (snapshot) => {
-      const pokeball = snapshot.val() || 0;
-      const pakePokeball = pokeball - 1;
-      if(pokeball >= 1){
-        await RefPoke.set(pakePokeball);
-        message.reply('awokaowk, kabur pokemonnya');
-      }else{
-        message.reply('nangkep pokemon gabisa pake tangan mas. cari pokeball dlu gih !pokeball.\nKalo ga beli !buy pokeball 1');
-      }
-      RefPoke.set(pakePokeball);
-    })
-      
-  }
-  }).catch((err) => {
-    console.log(err);
-  })
+});
+}).catch((err) => {
+  console.log(err);
+});
+    }
+}); //ini ref pokemon ada berapa
 }
+
+
 
 if (pesan.startsWith('!setgacoan')) {
   const param1 = parseInt(pesan.split(' ')[1]) - 1;
   const pokemon = [];
-
+  
   if (param1 >= 0) {
     await RefPokemon.once('value', async (snapshot) => {
       const pokemonData = snapshot.val() || {};
@@ -1247,140 +1698,374 @@ if (pesan.startsWith('!setgacoan')) {
         const pokemonATT = pokemonData[id].ATTACK;
         const pokemonDEFF = pokemonData[id].DEFENSE;
         const pokemonSPD = pokemonData[id].SPEED;
+        const pokemonLVL = pokemonData[id].LVL;
+        const pokemonEXP = pokemonData[id].EXP;
         const pokemonTYPE = pokemonData[id].TYPE;
 
         const pokemonStats = {
-          name: pokemonName,
-          hp: pokemonHP,
-          attack: pokemonATT,
-          defense: pokemonDEFF,
-          speed: pokemonSPD,
-          type: pokemonTYPE
+          namaPokemon: pokemonName,
+          HP: pokemonHP,
+          ATTACK: pokemonATT,
+          DEFENSE: pokemonDEFF,
+          SPEED: pokemonSPD,
+          LVL: pokemonLVL,
+          EXP: pokemonEXP,
+          TYPE: pokemonTYPE
         };
 
         pokemon.push(pokemonStats);
       });
-    });
-
-    setTimeout(() => {
+      
+      setTimeout(() => {
       const jumlahPokemon = pokemon.length;
       if (param1 < jumlahPokemon) {
         const gacoan = pokemon[param1];
-        const { name, hp, attack, defense, speed, type } = gacoan;
-
-        // Simpan gacoan ke dalam database
-        RefGacoan.set(gacoan);
-        let pokemonList = '';
-        pokemonList += `Gacoan: ${name}\n`;
-        pokemonList += `   - HP: ${hp}\n`;
-        pokemonList += `   - Attack: ${attack}\n`;
-        pokemonList += `   - Defense: ${defense}\n`;
-        pokemonList += `   - Speed: ${speed}\n`;
-        pokemonList += `   - Type: ${type}\n`;
-        message.reply(`Berhasil set Gacoan:\n${pokemonList}`);
+        const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, LVL, EXP, TYPE } = gacoan;
+        RefGacoan.once('value', async(snapshot) => {
+          const Gacoan = snapshot.val()
+          if(Gacoan){
+            message.reply('Gagal Mengganti Gacoan, Copot gacoan dulu !lepasgacoan')
+          }else{
+            RefGacoan.set(gacoan);
+            const pokemonId = Object.keys(pokemonData)[param1];
+            RefPokemon.child(pokemonId).remove();
+            let pokemonList = '';
+            pokemonList += `Gacoan: ${namaPokemon} LVL: ${LVL}\n`;
+            pokemonList += `   - HP: ${HP}\n`;
+            pokemonList += `   - Attack: ${ATTACK}\n`;
+            pokemonList += `   - Defense: ${DEFENSE}\n`;
+            pokemonList += `   - Speed: ${SPEED}\n`;
+            pokemonList += `   - EXP: ${EXP}\n`;
+            pokemonList += `   - Type: ${TYPE}\n`;
+            client.sendMessage(message.from,`Berhasil set Gacoan:\n${pokemonList}`);
+          }
+        });
+        
       } else {
-        message.reply(`Nomor Pokemon tidak valid. Silakan pilih nomor antara 1 dan ${jumlahPokemon}.`);
+        client.sendMessage(message.from,`Nomor Pokemon tidak valid. Silakan pilih nomor antara 1 dan ${jumlahPokemon}.`);
       }
+      
     }, 1000);
+  });
   } else {
-    message.reply(`Nomor Pokemon tidak valid. Silakan pilih nomor antara 1 dan ${pokemon.length}.`);
+    client.sendMessage(message.from,`Nomor Pokemon tidak valid. Silakan pilih nomor antara 1 dan ${pokemon.length}.`);
   }
 }
 
+if(pesan.startsWith('!lepasgacoan')){
+  RefGacoan.once('value', async (snapshot) => {
+    const dataGacoan = snapshot.val() || {};
+      RefPokemon.push(dataGacoan);  
+      setTimeout(async () => {
+        await RefGacoan.remove();
+        message.reply('Gacoan Berhasil di hapus')
+      },2000)
+  });
+}
+
+
+
 if (pesan.startsWith('!fight')) {
+  const param1 = pesan.split(' ')[1];
   let p1 = [];
   let p2 = [];
-  let isFightInProgress = false; // Flag untuk menandakan apakah pertarungan sedang berlangsung
-  const param1 = pesan.split(' ')[1];
-  const RefGacoan2 = param1.replace(/@/g, '') + '_c_us';
-  const RefGacoanP2 = PokemonRef.child(RefGacoan2).child('pokemon').child('gacoan');
-  const RefRep2 = pointRef.child(RefGacoan2).child('reputasi');
+  if (param1) {
+    RefFightDelay.once('value', async(snapshot) => {
+      const delayF = snapshot.val() || "true"
+      if(delayF === 'true'){
 
-  if (param1.length > 11) {
-    // Pengecekan apakah pertarungan sedang berlangsung
-    if (isFightInProgress) {
-      message.reply('Pertarungan sebelumnya belum selesai.');
-      return;
-    }
-
+        const RefGacoan2 = param1.replace(/@/g, '') + '_c_us';
+        const RefGacoanP2 = PokemonRef.child(RefGacoan2).child('pokemon').child('gacoan');
+        const RefRep2 = pointRef.child(RefGacoan2).child('reputasi');
+        
     RefGacoan.once('value', async (snapshot) => {
       const gacoanP1 = snapshot.val() || {};
       if (Object.keys(gacoanP1).length > 0) {
         p1.push(gacoanP1);
       } else {
-        message.reply('lu belum ada gacoan. set dulu !setgacoan');
+        client.sendMessage(message.from,'lu belum ada gacoan. set dulu !setgacoan');
       }
     });
-
+    
     RefGacoanP2.once('value', async (snapshot) => {
       const gacoanP2 = snapshot.val() || {};
       if (Object.keys(gacoanP2).length > 0) {
         p2.push(gacoanP2);
       } else {
-        message.reply('Lawan lu belom punya gacoan. Telponin suruh set gitu');
+        client.sendMessage(message.from,'Lawan lu belom punya gacoan. Telponin suruh set gitu');
       }
     });
-
+    
     setTimeout(async () => {
       if (p1.length > 0 && p2.length > 0) {
-        isFightInProgress = true; // Set flag menjadi true saat pertarungan dimulai
-        message.reply(`Pertarungan antara ${p1[0].name} VS ${p2[0].name}`);
-        let P1HP = p1[0].hp;
-        let P2HP = p2[0].hp;
-
-        const fightLoop = async () => {
-          let winner = null;
-          RefRep.once('value', async (snapshot) => {
-            const val1 = snapshot.val() || 0;
-            const repmenang = val1 + 100;
-            const repKalah = val1 - 10;
-
-            RefRep2.once('value', async (snapshot) => {
-              const val2 = snapshot.val() || 0;
-              const repmenang2 = val2 + 100;
-              const repKalah2 = val2 - 10;
-
-              const P1att = p1[0].attack / p1[0].defense * 15;
-              const P2att = p2[0].attack / p2[0].defense * 15;
-              P1HP -= P2att;
-              P2HP -= P1att;
-              console.log(P1HP);
-              console.log(P2HP);
-              console.log(P1att);
-              console.log(P2att);
-
+        isFightInProgress = true;
+        message.reply(`Pertarungan antara ${p1[0].namaPokemon} VS ${p2[0].namaPokemon}`);
+        let P1HP = p1[0].HP;
+        let P2HP = p2[0].HP;
+        RefRep.once('value', async (snapshot) => {
+          const val1 = snapshot.val() || 0;
+          const repmenang = val1 + 50;
+          const repKalah = val1 + 5;
+          
+          RefRep2.once('value', async (snapshot) => {
+            const val2 = snapshot.val() || 0;
+            const repmenang2 = val2 + 50;
+            const repKalah2 = val2 + 5;
+            
+            const fightLoop = async () => {
+              let winner = null;
+              const P1att = (p1[0].ATTACK / p2[0].DEFENSE * 7).toFixed(0);
+              const P2att = (p2[0].ATTACK / p1[0].DEFENSE * 7).toFixed(0);
+              const criticalChance = 0.4;
+              const isP1Critical = Math.random() <= criticalChance;
+              const isP2Critical = Math.random() <= criticalChance;
+              const P1attModified = isP1Critical ? P1att * P1att : P1att;
+              const P2attModified = isP2Critical ? P2att * P1att : P2att;
+              P1HP -= P2attModified;
+              P2HP -= P1attModified;
+              P1HP = Math.max(0, P1HP); // Mengatur HP P1 menjadi 0 jika kurang dari 0
+              P2HP = Math.max(0, P2HP); // Mengatur HP P2 menjadi 0 jika kurang dari 0
+              console.log(`P1Att: ${P1att}`);
+              console.log(`P1HP: ${P1HP}`);
+              console.log(`P1Att with Crit: ${P1attModified}`);
+              console.log(`P2HP: ${P2HP}`);
+              console.log(`P2Att: ${P2att}`);
+              console.log(`P2Att with Crit: ${P2attModified}`);
               if (P1HP > 0 && P2HP > 0) {
-                setTimeout(fightLoop, 1000);
+                setTimeout(fightLoop, 2000);
               } else {
                 if (P1HP <= 0 && P2HP <= 0) {
-                  message.reply(`Pertarungan berakhir dengan hasil seri!`);
+                  client.sendMessage(message.from,`Pertarungan berakhir dengan hasil seri!`);
                 } else if (P1HP <= 0) {
                   await RefRep2.set(repmenang2);
                   await RefRep.set(repKalah);
-                  winner = p2[0].name;
-                  message.reply(`Pertarungan berakhir! ${p2[0].name} adalah pemenangnya!`);
+                  winner = p2[0].namaPokemon;
+                  client.sendMessage(message.from,`Pertarungan berakhir! ${p2[0].namaPokemon} adalah pemenangnya!`);
                 } else {
                   await RefRep.set(repmenang);
                   await RefRep2.set(repKalah2);
-                  winner = p1[0].name;
-                  message.reply(`Pertarungan berakhir! ${p1[0].name} adalah pemenangnya!`);
+                  winner = p1[0].namaPokemon;
+                  client.sendMessage(message.from,`Pertarungan berakhir! ${p1[0].namaPokemon} adalah pemenangnya!`);
                 }
-                isFightInProgress = false; // Set flag menjadi false setelah pertarungan selesai
+                await RefFightDelay.set('false');
               }
-            });
-          });
-        };
-
-        setTimeout(fightLoop, 2000);
+            };        
+            setTimeout(fightLoop, 2000);
+          }); 
+        }); 
       } else {
-        message.reply(`Pertarungan Gagal. gatau kenapa lah, cape anjir`);
+        client.sendMessage(message.from,`Pertarungan Gagal. gatau kenapa lah, cape anjir`);
       }
+      setTimeout(async () => {
+        await RefFightDelay.set('true');
+      }, 300000);
     }, 1000);
+  }else{
+    message.reply('Pertarungan Gagal, salah satu dari kalian Sedang Cooldown')
+  }
+  });
   } else {
-    message.reply('tag aja dlu orng nya');
+    client.sendMessage(message.from,'tag aja dlu orng nya');
   }
 }
 
+
+
+
+if (pesan.startsWith('!cekgacoan')) {
+  const param1 = pesan.split(' ')[1];
+  if (param1) {
+    const RefGacoan = param1.replace(/@/g, '') + '_c_us';
+    const RefGacoanA = PokemonRef.child(RefGacoan).child('pokemon').child('gacoan');
+    RefGacoanA.once('value', (snapshot) => {
+      const gacoanMusuh = snapshot.val();
+      if (gacoanMusuh) {
+        const { namaPokemon, HP, ATTACK, DEFENSE,SPEED, LVL, EXP, TYPE } = gacoanMusuh;
+        client.sendMessage(message.from,`gacoan Dia ni\n${namaPokemon}\nLevel: ${LVL}\nHP: ${HP}\nAttack: ${ATTACK}\nDefense: ${DEFENSE}\nSpeed: ${SPEED}\nTYPE: ${TYPE}\nEXP: ${EXP}`);} else {
+        client.sendMessage(message.from,'Dia belom ada gacoan anjay.');
+      }
+    });
+  } else {
+    RefGacoan.once('value', (snapshot) => { 
+      const gacoanGua = snapshot.val();
+      if (gacoanGua) {
+        const { namaPokemon, HP, ATTACK, DEFENSE,SPEED, LVL, EXP, TYPE } = gacoanGua;
+        client.sendMessage(message.from,`gacoan lu ni\n${namaPokemon}\nLevel: ${LVL}\nHP: ${HP}\nAttack: ${ATTACK}\nDefense: ${DEFENSE}\nSpeed: ${SPEED}\nTYPE: ${TYPE}\nEXP: ${EXP}`);
+      } else {
+        client.sendMessage(message.from,'Dia belom ada gacoan anjay.');
+      }
+    });
+  }
+}
+
+if (pesan.startsWith('!dismiss')) {
+  const param1 = parseInt(pesan.split(' ')[1]) - 1;
+  const pokemon = [];
+  if (param1 >= 0) {
+    await RefPokemon.once('value', async (snapshot) => {
+      const pokemonData = snapshot.val() || {};
+        Object.keys(pokemonData).forEach((id) => {
+          const pokemonName = pokemonData[id].namaPokemon;
+          const pokemonHP = pokemonData[id].HP;
+          const pokemonATT = pokemonData[id].ATTACK;
+          const pokemonDEFF = pokemonData[id].DEFENSE;
+          const pokemonSPD = pokemonData[id].SPEED;
+          const pokemonTYPE = pokemonData[id].TYPE;
+
+          const pokemonStats = {
+            namaPokemon: pokemonName,
+            HP: pokemonHP,
+            ATTACK: pokemonATT,
+            DEFENSE: pokemonDEFF,
+            SPEED: pokemonSPD,
+            TYPE: pokemonTYPE,
+            penjual: sanitizedSender,
+          };
+
+          pokemon.push(pokemonStats);
+        });
+        setTimeout(async () => {
+          const jumlahPokemon = pokemon.length;
+          if (param1 < jumlahPokemon) {
+            const jualPoke = pokemon[param1];
+            const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, TYPE, harga, penjual } = jualPoke;
+            let pokemonList = '';
+            pokemonList += `${namaPokemon}\n`;
+            client.sendMessage(message.from,`Berhasil Ngelepasin\n${pokemonList}`);
+
+            setTimeout(async () => {
+              const snapshot = await RefPokemon.once('value');
+              const pokemonData = snapshot.val() || {};
+              const pokemonKeys = Object.keys(pokemonData);
+              const pokemonIdToDelete = pokemonKeys[param1];
+              await RefPokemon.child(pokemonIdToDelete).remove();
+            }, 2000);
+          }
+        }, 1000);
+    });
+  } else {
+    client.sendMessage(message.from,'Format yang benar: `!dismiss <nomor_pokemon>`\nContoh: `!dismiss 4`');
+  }
+}
+if (pesan.startsWith('!sell')) {
+  const param1 = parseInt(pesan.split(' ')[1]) - 1;
+  const pokemon = [];
+
+  if (param1 >= 0) {
+    const param2 = parseInt(pesan.split(' ')[2]);
+
+    await RefPokemon.once('value', async (snapshot) => {
+      const pokemonData = snapshot.val() || {};
+
+      // Jual
+      if (param2 >= 500) {
+        Object.keys(pokemonData).forEach((id) => {
+          const pokemonName = pokemonData[id].namaPokemon;
+          const pokemonHP = pokemonData[id].HP;
+          const pokemonATT = pokemonData[id].ATTACK;
+          const pokemonDEFF = pokemonData[id].DEFENSE;
+          const pokemonSPD = pokemonData[id].SPEED;
+          const pokemonTYPE = pokemonData[id].TYPE;
+
+          const pokemonStats = {
+            namaPokemon: pokemonName,
+            HP: pokemonHP,
+            ATTACK: pokemonATT,
+            DEFENSE: pokemonDEFF,
+            SPEED: pokemonSPD,
+            TYPE: pokemonTYPE,
+            harga: param2,
+            penjual: sanitizedSender,
+          };
+
+          pokemon.push(pokemonStats);
+        });
+
+        setTimeout(async () => {
+          const jumlahPokemon = pokemon.length;
+          if (param1 < jumlahPokemon) {
+            const jualPoke = pokemon[param1];
+            const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, TYPE, harga, penjual } = jualPoke;
+
+            await MarketRef.push(jualPoke);
+
+            let pokemonList = '';
+            pokemonList += `Nama: ${namaPokemon}\n`;
+            pokemonList += `   - HP: ${HP}\n`;
+            pokemonList += `   - Attack: ${ATTACK}\n`;
+            pokemonList += `   - Defense: ${DEFENSE}\n`;
+            pokemonList += `   - Speed: ${SPEED}\n`;
+            pokemonList += `   - Type: ${TYPE}\n`;
+            pokemonList += `   - Harga: ${harga}\n`;
+
+            client.sendMessage(message.from,`Berhasil Menjual\n${pokemonList}`);
+
+            setTimeout(async () => {
+              const snapshot = await RefPokemon.once('value');
+              const pokemonData = snapshot.val() || {};
+              const pokemonKeys = Object.keys(pokemonData);
+              const pokemonIdToDelete = pokemonKeys[param1];
+              await RefPokemon.child(pokemonIdToDelete).remove();
+            }, 2000);
+          }
+        }, 1000);
+      } else {
+        client.sendMessage(message.from,'Harga jual harus lebih dari atau sama dengan 500.');
+      }
+    });
+  } else {
+    client.sendMessage(message.from,'Format yang benar: `!sell <nomor_pokemon> <harga>`\nContoh: `!sell 4 100000`');
+  }
+}
+
+if(pesan.startsWith('!market')){
+  const Market = [];
+  await MarketRef.once('value', async (snapshot) =>{
+    const marketData = snapshot.val() || {};
+
+    Object.keys(marketData).forEach((id) => {
+      const pokemonName = marketData[id].namaPokemon;
+      const pokemonHP = marketData[id].HP;
+      const pokemonATT = marketData[id].ATTACK;
+      const pokemonDEFF = marketData[id].DEFENSE;
+      const pokemonSPD = marketData[id].SPEED;
+      const pokemonTYPE = marketData[id].TYPE;
+      const pokemonHARGA = marketData[id].harga;
+      const pokemonPENJUAL = marketData[id].penjual;
+
+      const pokemonList = {
+        namaPokemon: pokemonName,
+        HP: pokemonHP,
+        ATTACK: pokemonATT,
+        DEFENSE: pokemonDEFF,
+        SPEED: pokemonSPD,
+        TYPE: pokemonTYPE,
+        harga: pokemonHARGA,
+        penjual: pokemonPENJUAL,
+      };
+      Market.push(pokemonList);
+    });
+
+    setTimeout(async () => {
+      if (Market.length === 0) {
+        message.reply('*Welcome To Pokemon Market*\nMarket Masih Kosong nih');
+      } else {
+        let marketList = '';
+        Market.forEach((pokemonList, index) => {
+          const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, TYPE, harga } = pokemonList;
+          marketList += `${index + 1}. ${namaPokemon}\n`;
+          marketList += `   - HP: ${HP}\n`;
+          marketList += `   - Attack  : ${ATTACK}\n`;
+          marketList += `   - Defense: ${DEFENSE}\n`;
+          marketList += `   - Speed: ${SPEED}\n`;
+          marketList += `   - Type: ${TYPE}\n`;
+          marketList += `   - HARGA: ${harga.toLocaleString('id-ID', { minimumFractionDigits: 0 })}Point\n`;
+        });
+        client.sendMessage(message.from,`*Welcome To Pokemon Market*\n*POKEMON*\n${marketList}`);
+      }
+    },1000)
+  });
+}
   
   //end of the line
 });
