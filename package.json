@@ -1,10 +1,10 @@
 {
   "name": "etmc-whatsapp-bot",
-  "version": "3.6.235.4-158713",
+  "version": "4.0.12.7-170",
   "description": "whatsapp bot, play games and colect the point",
   "main": "index.js",
   "scripts": {
-    "rraf": "node index.js"
+    "rraf": "nodemon index.js"
   },
   "author": "rraf",
   "license": "ISC",
