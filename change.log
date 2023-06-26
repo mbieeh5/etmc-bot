@@ -1,0 +1,150 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+
+## [5.1.0] - 2023-06-26
+### Changed
+- buff the !fight AI stat, before: random => random + P1[0]stat.
+- Added EXP & LVL to !sell prevent error while !buy pokemon & !setgacoan.
+ 
+
+## [5.0.1] - 2023-06-25
+### Added
+- apakah command.
+
+### Changed
+- added more notification for pokemon level Up in !fight Ai.
+- EXP system for pokemon fight PvP & AI.
+
+## [5.0.0] - 2023-06-24
+### Added
+- Item Greatball.
+- Item Ultraball.
+- Item Masterball.
+- Item Training Ticket.
+- !lepasgacoan command.
+
+### Changed
+- nerf the pokeball !catch from: 80% => 50% success chance.
+- added Greatball !catch success chance 65%.
+- added Ultraball !catch success chance 85%.
+- added Masterball !catch success chance 100%.
+- !buy now add some params: !buy pokeball/Greatball/Ultraball/Masterball/TrainingTicket/pokemon.
+- Potion, Elixir, TrainingTicket now have a stock it will restock at midnight.
+- Potion get limited buy from noLimit => 30/day.
+- Elixir get limited buy from noLimit => 10/day.
+- TrainingTicket get limited 5/day.
+
+###
+- fix !lepasgacoan that won't remove the gacoan.
+- fix !setgacoan if you already have gacoan set it will replace the gacoan before to new.
+- fix !use potion to maxHP if HP more than MaxHP
+
+## [4.18.18] - 2023-06-20
+### Added
+- Leveling system for pokemon.
+- Item Potion.
+- Item Elixir.
+- HP will be decrease for each battle and save it to gacoan.
+- !use potion/elixir command.
+- added MaxHP to pokemon.
+
+### Changed
+- added MAXHP to pokemon hp since you !catch it'll be set to HP.
+- Improve battle system for PvP added a critical chance 0.2.
+
+### Fixed
+- fix use potion infinity HP to MaxHP.
+- fix HP & MAXHP if you setoff gacoan in 0 HP, it will set MaxHP to 0 too.
+- fix HP & MAXHP after battle PvP/Ai, pokemon MAXHP will be store as 0.
+
+
+
+## [4.12.13] - 2023-06-18
+
+### Added
+- !market command.
+- !sell command.
+
+### Changed
+- Improve !buy command from: !buy pokeball => !buy pokeball/pokemon.
+
+### Fixed
+- fix !sell command that won't remove pokemon from pokedex.
+- fix !market mapping.
+- fix !buy pokemon that won't add point to seller and pay to buyer.
+
+
+## [4.10.9] - 2023-06-15
+
+### Added
+- Pokemon simple games.
+- !catch command.
+- !pokeball command.
+- !cektas command.
+- !cekgacoan command.
+- !pokedex command.
+- !setgacoan command.
+- !fight AI command.
+- !fight PvP command.
+- !buy pokeball command.
+
+### Changed
+- Improve !fight AI & PvP battle system to prevent HP below 0.
+
+### Fixed
+- fix bug on !catch that pokemon status won't store in firebase.
+- fix !pokeball delay: 0 second => 60 second.
+- fix !cektas mapping array.
+- fix !cekgacoan if param1 null won't be execute anything.
+- fix !pokedex mapping.
+- fix !setgacoan to remove pokemon from pokedex and set it to gacoan database.
+
+
+## [3.0.5] - 2023-06-07
+### Added
+- !togel command.
+- !slot command.
+- !nama command.
+- !ribut command.
+- !kirim point command.
+- !stat command.
+- !pap command.
+
+### Fixed
+- fix bug on !hentai that won't send the pict.
+- fix bug on !berita that get empty array.
+- fix bug on !kirim point that won't send negative potion anymore.
+- fix !togel correction on the result and reward for winner.
+- fix !slot on the result and reward for winner & pay for not a winning.
+
+
+## [2.0.0] - 2023-06-03
+### Added
+- Point system to each chat get randomly point 50 - 100.
+- Reputaion system to each chat get 1 Reputaion.
+- Connection to Firebase.
+- !mabar command.
+- !ping command.
+- !info cuaca command.
+- !info mabar command.
+
+### Changed
+- Toxic Word get warn & got penalty -25000 Point & -100 Reputaion from database
+
+
+## [1.0.0] - 2023-06-01
+### Added
+- Toxic Word get warn.
+- !help command.
+- !rules command.
+- !berita command.
+- !cuaca command.
+- !doa command.
+- !rate command.
+- !quotes command.
+- !hentai command.
