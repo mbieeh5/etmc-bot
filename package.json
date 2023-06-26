@@ -1,6 +1,6 @@
 {
   "name": "etmc-whatsapp-bot",
-  "version": "4.0.12.7-170",
+  "version": "5.1.0",
   "description": "whatsapp bot, play games and colect the point",
   "main": "index.js",
   "scripts": {
