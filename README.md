@@ -5,6 +5,20 @@ Make your whatsapp group/chat more intresting and playable.
 
 if one of person say the toxic sentence it will trigger the point system then -25.000 Point & -100 Reputation. each alphabet carry 1 point limited to 300++ alphabet, and each chat you send that carry 1 reputaion. since the reputaion (-) you will get the tier `BOCAH TOXIC` that mean you the toxic person in the group.
 
+`TierList`
+- Reputaion <= 0 {💀BOCAH TOXIC💀}
+- Reputaion <= 10 {_Bronze_}
+- Reputaion <= 20 {_Silver_}
+- Reputaion <= 30 {_Gold_}
+- Reputaion <= 40 {_Platinum_}
+- Reputaion <= 100 {💎_Diamond_💎}
+- Reputaion <= 200 {♚_CROWN_♚}
+- Reputaion <= 500 {⭐_ACE_⭐}
+- Reputaion <= 666 {S0N-0F-S4TAN}
+- Reputaion <= 1000 {🔥_CONQUEROR_🔥}
+- Reputaion >= 2000 {--👑GOD👑--}
+- Reputaion Else {Anak💀Haram}
+
 The pokemon system still updated for fixing some issues & bug.
 
 ## Admin Command
@@ -18,7 +32,7 @@ The pokemon system still updated for fixing some issues & bug.
 
 - `!berita` = get the latest news from CNN randomly & language set to ID.
 - `!cuaca` = get the weather prediction from BMKG make sure you set ur to your location.
-- `!doa` = get daily doa randomly.  
+- `!doa` = get daily doa randomly.  
 - `!info <cuaca/mabar>` = you can use for get info for cuaca and mabar `!info cuaca` || `!info mabar`
 - `!kirim` <Tag person> <amount> = send some point to your member/friend `!kirim @62xxxxxxx 100000`.
 - `!mabar` <message> = you can set mabar to your database and callback everytime some one says `!info mabar`, `!mabar play COD at 9PM today`.
@@ -34,11 +48,11 @@ The pokemon system still updated for fixing some issues & bug.
 - `apakah <question True of false>` = predict ur question yes or no, `apakah aku ganteng?`
 - `!buy <number pokemon in !market>` = you can buy pokemon in global market first you check `!market` if you want to buy number 6 input it, `!buy 6`. make sure your point is enough.
 - `!buy <pokeball/greatball/ultraball/tiket/potion>` = also you can buy pokeball price list:
-    - pokeball : 100 Point @1pcs.
-    - greatball: 500 Point @1pcs.
-    - ultraball: 1000Point @1pcs.
-    - Potion    : 250 Point @3pcs. Only 30pcs/days
-    - tiket : 5000 Point @1pcs. Only 5pcs/days
+    - pokeball : 100 Point @1pcs.
+    - greatball: 500 Point @1pcs.
+    - ultraball: 1000Point @1pcs.
+    - Potion    : 250 Point @3pcs. Only 30pcs/days
+    - tiket : 5000 Point @1pcs. Only 5pcs/days
 - `!cektas` = check your inventory.
 - `!catch <you can use greatball/ultraball/masterball>` = if you use only `!catch` it will use regular pokeballs, if you want to use otherball use it after `!catch greatball`.
 - `!cekgacoan <tag the person>` = check ur friend pokemon that they use for hero,`!cekgacoan @62xxxxxxx` and fight them if you ready
@@ -60,7 +74,7 @@ The pokemon system still updated for fixing some issues & bug.
 - !hentai
 ## Support Me
 
-- Send me feedback:  rrap5@outlook.com
+- Send me feedback:  rrap5@outlook.com
 - Saweria? : https://saweria.co/rrap
 
 
@@ -71,12 +85,11 @@ The pokemon system still updated for fixing some issues & bug.
 
 ## Special Thanks For 
 
- - [Whatsapp-Web.JS](https://github.com/pedroslopez/whatsapp-web.js)
- - [API Pokemon](https://pokeapi.co)
- - [API Berita/News CNN](https://api-berita-indonesia.vercel.app/cnn/terbaru/)
- - [API Cuaca/Weather BMKG](https://ibnux.github.io/BMKG-importer/cuaca/5002227.json)
- - [API Daily Doa](https://doa-doa-api-ahmadramadhan.fly.dev/api)
- - [API Quotes](https://kyoko.rei.my.id/api/quotes.php)
-
+ - [Whatsapp-Web.JS](https://github.com/pedroslopez/whatsapp-web.js)
+ - [API Pokemon](https://pokeapi.co)
+ - [API Berita/News CNN](https://api-berita-indonesia.vercel.app/cnn/terbaru/)
+ - [API Cuaca/Weather BMKG](https://ibnux.github.io/BMKG-importer/cuaca/5002227.json)
+ - [API Daily Doa](https://doa-doa-api-ahmadramadhan.fly.dev/api)
+ - [API Quotes](https://kyoko.rei.my.id/api/quotes.php)
 
 
