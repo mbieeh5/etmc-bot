@@ -1,6 +1,6 @@
 {
   "name": "etmc-whatsapp-bot",
-  "version": "5.1.0",
+  "version": "5.1.1-beta",
   "description": "whatsapp bot, play games and colect the point",
   "main": "index.js",
   "scripts": {
@@ -9,11 +9,13 @@
   "author": "rraf",
   "license": "ISC",
   "dependencies": {
+    "@tensorflow/tfjs-node": "^4.8.0",
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
     "firebase": "^9.22.0",
     "firebase-admin": "^11.8.0",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.21.0"
+    "whatsapp-web.js": "^1.21.0",
+    "xlsx": "^0.18.5"
   }
 }
