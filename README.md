@@ -14,9 +14,9 @@ if one of person say the toxic sentence it will trigger the point system then -2
 - Reputaion <= 100 {💎_Diamond_💎}
 - Reputaion <= 200 {♚_CROWN_♚}
 - Reputaion <= 500 {⭐_ACE_⭐}
-- Reputaion <= 666 {S0N-0F-S4TAN}
-- Reputaion <= 1000 {🔥_CONQUEROR_🔥}
-- Reputaion >= 2000 {--👑GOD👑--}
+- Reputaion <= 696 {S0N-0F-S4TAN}
+- Reputaion <= 3000 {🔥_CONQUEROR_🔥}
+- Reputaion >= 5000 {--👑GOD👑--}
 - Reputaion Else {Anak💀Haram}
 
 The pokemon system still updated for fixing some issues & bug.
