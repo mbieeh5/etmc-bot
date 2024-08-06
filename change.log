@@ -5,12 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2024-04-21
+### Added
+- Absen Web
+- %Multi <Number for multiply> {Only Admin Can Do This Command}
+- after restart server will send message to specific group to indicate!
+
+### Changed
+- Function Absen & Absen web set TRUE if server restart
+- Point & Reputaion !Absen now can multiply customly 
+- Punishment Now can multiply customly
+
+### Moved
+- !buy Moved to Website
+
+### Removed
+- Add Mabar & Mabar Command
+- !buy Pokeball, Elixir, etc
+- %Absen Reset All Absen command
+
 
 ## [5.1.0] - 2023-06-26
 ### Changed
 - buff the !fight AI stat, before: random => random + P1[0]stat.
 - Added EXP & LVL to !sell prevent error while !buy pokemon & !setgacoan.
- 
+- Added Admin Command %AddStock for reset the potion,TrainingTicket, Elixir Stock.
+- fix !fight MaxHP will stay at fight before.
 
 ## [5.0.1] - 2023-06-25
 ### Added
