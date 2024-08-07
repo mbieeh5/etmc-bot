@@ -1,5 +1,7 @@
 const {witAi, client} = require('./config')
 const db = require('./config').db;
+const path = require('path')
+const fs = require('fs');
 
 const kataTerlarang = [
   /\banjg\b/i, /\bajg\b/i, /\banal\b/i, /\basu\b/i, /\bass\b/i, /\banjing\b/i, /\banjeng\b/i, /\bbajingan\b/i,
@@ -12,6 +14,15 @@ const kataTerlarang = [
   /\bsange\b/i, /\bsagne\b/i, /\bsat\b/i, /\btot\b/i, /\btod\b/i, /\btolol\b/i, /\btll\b/i, /\bttt\b/i, /\btitit\b/i,
   /\btai\b/i, /\btod\b/i
 ];
+
+const commands = {};
+fs.readdirSync(path.join(__dirname, 'commands')).forEach(file => {
+  if(file.endsWith('.js')) {
+    const commandName = file.replace('.js', '');
+    commands[commandName] = require(`../commands/${file}`);
+  }
+});
+
 
 async function handleCommand(message) {
   const sA = message.author;
@@ -28,6 +39,8 @@ async function handleCommand(message) {
   const pesan = message.body.toLowerCase();
   const point = {};
   const reputasi = {};
+
+
 
     if (pesan) {
       witAi.message(pesan, {})
@@ -119,6 +132,17 @@ async function handleCommand(message) {
         });
       }
       break;
+    }
+    if(pesan.startsWith('!')) {
+      const commandName = pesan.substring(1).split(' ')[0];
+      const command = commands[commandName];
+        if(command && typeof command.execute === 'function') {
+          const Response = await command.execute(message);
+          if(Response) {
+            await client.sendMessage(message.from, Response);
+          }
+          return;
+        }
     }
   }
 }
