@@ -27,7 +27,9 @@ const Multiply = db.ref('dataData/dataDelay');
 const ReplyRef = db.ref('dataData/BalasanKataKasar');
 const MarketRef = db.ref('dataData/market');
 const ToxicRef = db.ref('dataData/kataKasar');
+const CekKodam = db.ref('dataData/CekKodam');
 const DataMRef = db.ref('dataData/mabar');
+const DataData = db.ref('dataData');
 const point = {};
 const reputasi = {};
 const thresholds = [0, 100 ,200, 500, 1000, 5000, 10000, 20000, 500000, 1000000, 1000000000];
@@ -39,8 +41,59 @@ const regexNama = /^!nama\s(.+)/;
 const regexInfo = /^!info\s(.+)/;
 const regexMabar = /^!mabar\s(.+)/;
 
+//Reset Absen to True
+function RestartServer() {
+  const absensi = false;
+  const absenWeb = true;
+  pointRef.once('value', (snapshot) => {
+    const penggunaData = snapshot.val();
+    if (penggunaData) {
+      Object.entries(penggunaData).forEach(([randomkey, data]) => {
+        pointRef.child(randomkey).child('absen').set(absensi);
+        pointRef.child(randomkey).child('absenWeb').set(absenWeb);
+        });
+        } else {
+          console.log('Database is empty');
+        }
+      });
+}
 
-
+// Update stok pada jam 12:00mlm
+function UpdateStock() {
+  DataData.child('delay').child('elixir').once('value', async (snapshot) => {
+      const SElixir = snapshot.val().stock || 0;
+      DataData.child('delay').child('greatballs').once('value', async (snapshot) => {
+          const SGreatballs = snapshot.val().stock || 0;
+          DataData.child('delay').child('masterball').once('value', async (snapshot) => {
+            const SMasterball = snapshot.val().stock || 0;
+            DataData.child('delay').child('pokeballs').once('value', async (snapshot) => {
+              const SPokeballs = snapshot.val().stock || 0;
+              DataData.child('delay').child('potion').once('value', async (snapshot) => {
+                const SPotion = snapshot.val().stock || 0;
+                DataData.child('delay').child('trainingTicket').once('value', async (snapshot) => {
+                  const STrainingTicket = snapshot.val().stock || 0;
+                  DataData.child('delay').child('ultraball').once('value', async (snapshot) => {
+                    const SUltraball = snapshot.val().stock || 0;
+                    
+                    DataData.child('delay').child('elixir').update({ stock: SElixir + 10 });
+                    DataData.child('delay').child('greatballs').update({ stock: SGreatballs + 10 });
+                    DataData.child('delay').child('masterball').update({ stock: SMasterball + 10 });
+                    DataData.child('delay').child('pokeballs').update({ stock: SPokeballs + 10 });
+                    DataData.child('delay').child('potion').update({ stock: SPotion + 10 });
+                    DataData.child('delay').child('trainingTicket').update({ stock: STrainingTicket + 10 });
+                    DataData.child('delay').child('ultraball').update({ stock: SUltraball + 10 });
+                    setTimeout(() => {
+                      const dataBarang = `Elixir : ${SElixir}\nPotion : ${SPotion}\nTraining Ticket : ${STrainingTicket}\nPokeballs : ${SPokeballs}\nGreatballs : ${SGreatballs}\nUltraballs : ${SUltraball}\nMasterballs : ${SMasterball}\nBelanjanya di => https://www.rraf-project.site/shopping/pokemon`
+                      client.sendMessage(`${process.env.GROUP_1}`, `Barang Telah Restock\n${dataBarang}`);
+                    },3000)
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+}
 
 function selesaiRestart() {
 
@@ -99,6 +152,26 @@ client.on('message', async (message) => {
     const RefGacoan = PokemonRef.child(sanitizedSender).child('pokemon').child('gacoan');
     const RefPokeDelay = PokemonRef.child(sanitizedSender).child('pokemon').child('delay');
     const RefFightDelay = PokemonRef.child(sanitizedSender).child('pokemon').child('delayF');
+    const kataTerlarang = [
+      /\banjg\b/i, /\bajg\b/i, /\banal\b/i, /\basu\b/i, /\bass\b/i, /\banjing\b/i, /\banjeng\b/i, /\bbajingan\b/i,
+      /\bbgst\b/i, /\bbangsat\b/i, /\bbabi\b/i, /\bcuk\b/i, /\bcok\b/i, /\bcukimai\b/i, /\bdancok\b/i, /\bdancuk\b/i,
+      /\bentot\b/i, /\bewe\b/i, /\bengas\b/i, /\bebol\b/i, /\bjingkontot\b/i, /\bjing\b/i, /\bjink\b/i, /\bjembut\b/i,
+      /\bjembod\b/i, /\bjmbd\b/i, /\bkon\b/i, /\bkontot\b/i, /\bkontol\b/i, /\bkntl\b/i, /\bkentot\b/i, /\bkintil\b/i,
+      /\bkimak\b/i, /\bler\b/i, /\bmemek\b/i, /\bmek\b/i, /\bmmk\b/i, /\bmeki\b/i, /\bngen\b/i, /\bngentot\b/i,
+      /\bnigga\b/i, /\bni99a\b/i, /\bnenen\b/i, /\bpantek\b/i, /\bpanteq\b/i, /\bpntek\b/i, /\bpntk\b/i, /\bpler\b/i,
+      /\bpepek\b/i, /\bpendo\b/i, /\bppk\b/i, /\bpuki\b/i, /\bpukimak\b/i, /\bpentek\b/i, /\bpukima\b/i, /\bsu\b/i,
+      /\bsange\b/i, /\bsagne\b/i, /\bsat\b/i, /\btot\b/i, /\btod\b/i, /\btolol\b/i, /\btll\b/i, /\bttt\b/i, /\btitit\b/i,
+      /\btai\b/i, /\btod\b/i
+    ];
+
+    //WIT AI 
+    clients
+    .message(`${pesan}`, {})
+    .then(data => {
+      console.log(`AI Response:` + JSON.stringify(data));
+      const TraitNormal = JSON.stringify(data.traits.normal[0].value);
+        client.sendMessage(message.from, TraitNormal);
+    }).catch(console.error);
     //function peek one seen photos
     if(pesan.startsWith('apanih?')){
       const isQuoted = await message.getQuotedMessage();
@@ -127,7 +200,6 @@ client.on('message', async (message) => {
         client.sendMessage(message.from, 'Apa kek lah, cape gua!')
       }
     }
-
     // function add mabar
     function addMabarData(mabar, nama) {
       DataMRef.child("1").set({
@@ -145,6 +217,563 @@ client.on('message', async (message) => {
       }
       return sn;
     }
+    // Function !Fight
+    const calculateEXP = (exp) => {
+      if (exp >= 55000) {
+        return 55;
+      } else if (exp >= 50000) {
+        return 54;
+      } else if (exp >= 45000) {
+        return 53;
+      } else if (exp >= 40000) {
+        return 52;
+      } else if (exp >= 35000) {
+        return 51;
+      } else if (exp >= 30000) {
+        return 50;
+      } else if (exp >= 27000) {
+        return 49;
+      } else if (exp >= 24000) {
+        return 48;
+      } else if (exp >= 21000) {
+        return 47;
+      } else if (exp >= 18000) {
+        return 46;
+      } else if (exp >= 16000) {
+        return 45;
+      } else if (exp >= 14000) {
+        return 44;
+      } else if (exp >= 12000) {
+        return 43;
+      } else if (exp >= 10000) {
+        return 42;
+      } else if (exp >= 9000) {
+        return 41;
+      } else if (exp >= 8000) {
+        return 40;
+      } else if (exp >= 7000) {
+        return 39;
+      } else if (exp >= 6000) {
+        return 38;
+      } else if (exp >= 5000) {
+        return 37;
+      } else if (exp >= 4500) {
+        return 36;
+      } else if (exp >= 4000) {
+        return 35;
+      } else if (exp >= 3500) {
+        return 34;
+      } else if (exp >= 3000) {
+        return 33;
+      } else if (exp >= 2500) {
+        return 32;
+      } else if (exp >= 2000) {
+        return 31;
+      } else if (exp >= 1750) {
+        return 30;
+      } else if (exp >= 1500) {
+        return 29;
+      } else if (exp >= 1250) {
+        return 28;
+      } else if (exp >= 1000) {
+        return 27;
+      } else if (exp >= 900) {
+        return 26;
+      } else if (exp >= 800) {
+        return 25;
+      } else if (exp >= 700) {
+        return 24;
+      } else if (exp >= 600) {
+        return 23;
+      } else if (exp >= 500) {
+        return 22;
+      } else if (exp >= 450) {
+        return 21;
+      } else if (exp >= 400) {
+        return 20;
+      } else if (exp >= 350) {
+        return 19;
+      } else if (exp >= 300) {
+        return 18;
+      } else if (exp >= 250) {
+        return 17;
+      } else if (exp >= 200) {
+        return 16;
+      } else if (exp >= 175) {
+        return 15;
+      } else if (exp >= 150) {
+        return 14;
+      } else if (exp >= 125) {
+        return 13;
+      } else if (exp >= 100) {
+        return 12;
+      } else if (exp >= 90) {
+        return 11;
+      } else if (exp >= 80) {
+        return 10;
+      } else if (exp >= 70) {
+        return 9;
+      } else if (exp >= 60) {
+        return 8;
+      } else if (exp >= 50) {
+        return 7;
+      } else if (exp >= 40) {
+        return 6;
+      } else if (exp >= 30) {
+        return 5;
+      } else if (exp >= 20) {
+        return 4;
+      } else if (exp >= 10) {
+        return 3;
+      } else if (exp >= 0) {
+        return 2;
+      } else {
+        return 1;
+      }
+    };
+    // Penambahan Status Pokemon
+    const increaseStatsByLevel = (currentLevel, newLevel) => {
+      let statIncrease = {
+        HP: 0,
+        ATTACK: 0,
+        DEFENSE: 0,
+        SPEED: 0,
+      };
+    
+      if (newLevel === currentLevel + 1) {
+        if (newLevel === 1 || newLevel === 2 || newLevel === 3 || newLevel === 4 || newLevel === 6 || newLevel === 7 || newLevel === 8 || newLevel === 9) {
+          statIncrease = {
+            HP: 50,
+            ATTACK: 50,
+            DEFENSE: 50,
+            SPEED: 50,
+          };
+        } else if (newLevel === 5) {
+          statIncrease = {
+            HP: 100,
+            ATTACK: 100,
+            DEFENSE: 100,
+            SPEED: 100,
+          };
+        } else if (newLevel === 10) {
+          statIncrease = {
+            HP: 200,
+            ATTACK: 200,
+            DEFENSE: 200,
+            SPEED: 200,
+          };
+        } else if (newLevel >= 11 && newLevel <= 50) {
+          statIncrease = {
+            HP: 9 * newLevel,
+            ATTACK: 9 * newLevel,
+            DEFENSE: 9 * newLevel,
+            SPEED: 9 * newLevel,
+          };
+        } else if (newLevel <= 55){
+          statIncrease = {
+            HP: 9 * newLevel,
+            ATTACK: 1 ,
+            DEFENSE: 1 ,
+            SPEED: 1 ,
+          };
+
+        }
+      }
+    
+      return statIncrease;
+    };
+    // function pokemon fight PVP
+    function fightPvpPokemon(P1, P2, TAG){
+      const maxHPP1 = P1[0].MAXHP;
+      const maxHPP2 = P2[0].MAXHP;
+      const RefGacoan2 = TAG.replace(/@/g, '') + '_c_us';
+      const RefGacoanP2 = PokemonRef.child(RefGacoan2).child('pokemon').child('gacoan');
+      const RefRep2 = pointRef.child(RefGacoan2).child('reputasi');
+
+        DataData.child('delay').child('fightCooldown').once('value', async(snapshot) => {
+          const cooldown = snapshot.val();
+          if(cooldown === "true"){
+            if(P1.length > 0 && P2.length > 0){
+              if(P1[0].HP <= 0){
+                client.sendMessage(message.from,`Darahmu habis mas\n!use potion dulu gih`);
+              }else if(P2[0].HP <= 0){
+                client.sendMessage(message.from,`Darah lawanmu habis mas\nsuruh !use potion dulu gih`);
+              }else{
+                client.sendMessage(message.from,`Pertarungan antara ${P1[0].namaPokemon} VS ${P2[0].namaPokemon}`);
+                DataData.child('delay').child('fightCooldown').set('false');
+                let P1HP = P1[0].HP;
+                let P2HP = P2[0].HP;
+
+                RefRep.once('value', async(snapshot) => {
+                  const valP1 = snapshot.val();
+                  const RepMenang = valP1 + 50;
+                  const repKalah = valP1 + 5;
+
+                  RefRep2.once('value', async(snapshot) => {
+                    const valP2 = snapshot.val();
+                    const RepMenang2 = valP2 + 50;
+                    const RepKalah2 = valP2 + 5;
+
+                      const fightLoop = async () => {
+                        let winner = null;
+                        const P1attck = (P1[0].ATTACK / P2[0].DEFENSE * 9).toFixed(0);
+                        const P2attck = (P2[0].ATTACK / P1[0].DEFENSE * 9).toFixed(0);
+                        const criticalChance = 0.4;
+                        const isP1Critical = Math.random() <= criticalChance;
+                        const isP2Critical = Math.random() <= criticalChance;
+                        const P1AttckFinal = isP1Critical ? P1attck * P1attck : P1attck;
+                        const P2AttckFinal = isP2Critical ? P2attck * P2attck : P2attck;
+                        P1HP -= P2AttckFinal;
+                        P2HP -= P1AttckFinal;
+                        P1HP = Math.max(0, P1HP);
+                        P2HP = Math.max(0, P2HP);
+                        console.log(`P1 HP: ${P1HP}`)
+                        console.log(`P1 ATTACK: ${P1attck}`)
+                        console.log(`P1 ATTACK if Crit: ${P1AttckFinal}`)
+                        console.log(`P2 HP: ${P2HP}`)
+                        console.log(`P2 ATTACK: ${P2attck}`)
+                        console.log(`P2 ATTACK if Crit: ${P2AttckFinal}`)
+                          if(P1HP > 0 && P2HP > 0){
+                            setTimeout(fightLoop, 10);
+                          }else{
+                            if(P1HP <= 0 && P2HP <= 0){
+                              const expDraw1 = P1[0].EXP + 50;
+                              const expDraw2 = P2[0].EXP + 50;
+                              const levelAfterBattleP1 = calculateEXP(P1[0].EXP + 50);
+                              const levelAfterBattleP2 = calculateEXP(P2[0].EXP + 50);
+                              const statIncreaseP1 = increaseStatsByLevel(P1[0].LVL, levelAfterBattleP1);
+                              const statIncreaseP2 = increaseStatsByLevel(P2[0].LVL, levelAfterBattleP2);
+                              const pokemonAfterBattleP1 = {
+                                HP: P1HP,
+                                MAXHP: maxHPP1 + statIncreaseP1.HP,
+                                ATTACK: P1[0].ATTACK + statIncreaseP1.ATTACK, 
+                                DEFENSE: P1[0].DEFENSE + statIncreaseP1.DEFENSE,
+                                SPEED: P1[0].SPEED + statIncreaseP1.SPEED, 
+                                LVL: levelAfterBattleP1,
+                                EXP: expDraw1,
+                                TYPE: P1[0].TYPE
+                              };
+                              const pokemonAfterBattleP2 = {
+                                HP: P2HP,
+                                MAXHP: maxHPP2 + statIncreaseP2.HP,
+                                ATTACK: P2[0].ATTACK + statIncreaseP2.ATTACK, 
+                                DEFENSE: P2[0].DEFENSE + statIncreaseP2.DEFENSE,
+                                SPEED: P2[0].SPEED + statIncreaseP2.SPEED, 
+                                LVL: levelAfterBattleP2,
+                                EXP: expDraw2,
+                                TYPE: P2[0].TYPE
+                              };
+                              RefGacoan.set(pokemonAfterBattleP1);
+                              RefGacoanP2.set(pokemonAfterBattleP2);
+                              client.sendMessage(message.from,`Pertarungan berakhir dengan hasil seri!`);
+                            }else if(P1HP <= 0){
+                              const expDraw1 = P1[0].EXP + 100;
+                              const expDraw2 = P2[0].EXP + 500;
+                              const levelAfterBattleP1 = calculateEXP(P1[0].EXP + 100)
+                              const levelAfterBattleP2 = calculateEXP(P2[0].EXP + 500)
+                              const statIncreaseP1 = increaseStatsByLevel(P1[0].LVL,levelAfterBattleP1);
+                              const statIncreaseP2 = increaseStatsByLevel(P2[0].LVL,levelAfterBattleP2);
+                              const pokemonAfterBattleP1 = {
+                                namaPokemon: P1[0].namaPokemon,
+                                HP: P1HP,
+                                MAXHP: maxHPP1 + statIncreaseP1.HP,
+                                ATTACK: P1[0].ATTACK + statIncreaseP1.ATTACK, 
+                                DEFENSE: P1[0].DEFENSE + statIncreaseP1.DEFENSE,
+                                SPEED: P1[0].SPEED + statIncreaseP1.SPEED, 
+                                LVL: levelAfterBattleP1,
+                                EXP: expDraw1,
+                                TYPE: P1[0].TYPE
+                              };
+                              const pokemonAfterBattleP2 = {
+                                namaPokemon: P2[0].namaPokemon,
+                                HP: P2HP,
+                                MAXHP: maxHPP2 + statIncreaseP2.HP,
+                                ATTACK: P2[0].ATTACK + statIncreaseP2.ATTACK, 
+                                DEFENSE: P2[0].DEFENSE + statIncreaseP2.DEFENSE,
+                                SPEED: P2[0].SPEED + statIncreaseP2.SPEED, 
+                                TYPE: P2[0].TYPE,
+                                EXP: expDraw2,
+                                LVL: levelAfterBattleP2
+                              };
+                              await RefGacoan.set(pokemonAfterBattleP1);
+                              await RefGacoanP2.set(pokemonAfterBattleP2);
+                              await RefRep2.set(RepMenang2);
+                              await RefRep.set(repKalah);
+                              winner = P2[0].namaPokemon;
+                              client.sendMessage(message.from,`Pertarungan berakhir! ${winner} adalah pemenangnya!`);
+                            }else{
+                              const expDraw1 = P1[0].EXP + 500;
+                              const expDraw2 = P2[0].EXP + 100;
+                              const levelAfterBattleP1 = calculateEXP(P1[0].EXP + 500)
+                              const levelAfterBattleP2 = calculateEXP(P2[0].EXP + 100)
+                              const statIncreaseP1 = increaseStatsByLevel(P1[0].LVL,levelAfterBattleP1);
+                              const statIncreaseP2 = increaseStatsByLevel(P2[0].LVL,levelAfterBattleP2);
+                              const pokemonAfterBattleP1 = {
+                                namaPokemon: P1[0].namaPokemon,
+                                HP: P1HP,
+                                MAXHP: maxHPP1 + statIncreaseP1.HP,
+                                ATTACK: P1[0].ATTACK + statIncreaseP1.ATTACK, 
+                                DEFENSE: P1[0].DEFENSE + statIncreaseP1.DEFENSE,
+                                SPEED: P1[0].SPEED + statIncreaseP1.SPEED, 
+                                LVL: levelAfterBattleP1,
+                                EXP: expDraw1,
+                                TYPE: P1[0].TYPE
+                              };
+                              const pokemonAfterBattleP2 = {
+                                namaPokemon: P2[0].namaPokemon,
+                                HP: P2HP,
+                                MAXHP: maxHPP2 + statIncreaseP2.HP,
+                                ATTACK: P2[0].ATTACK + statIncreaseP2.ATTACK, 
+                                DEFENSE: P2[0].DEFENSE + statIncreaseP2.DEFENSE,
+                                SPEED: P2[0].SPEED + statIncreaseP2.SPEED, 
+                                TYPE: P2[0].TYPE,
+                                EXP: expDraw2,
+                                LVL: levelAfterBattleP2
+                              };
+                              await RefGacoan.set(pokemonAfterBattleP1);
+                              await RefGacoanP2.set(pokemonAfterBattleP2);
+                              await RefRep2.set(RepKalah2);
+                              await RefRep.set(RepMenang);
+                              winner = P1[0].namaPokemon;
+                              client.sendMessage(message.from,`Pertarungan berakhir! ${winner} adalah pemenangnya!`);
+                            }
+                            await RefFightDelay.set('false');
+                          }//else jika fight loop selesai
+                        };//fightloop
+                    setTimeout(async () => {
+                      await DataData.child('delay').child('fightCooldown').set('true');
+                    }, 60000);
+                    setTimeout(async () => {
+                      await RefFightDelay.set('true');
+                    }, 300000);
+                    setTimeout(fightLoop, 2000);
+                  })//RefRep2
+                });//RefRep
+              }//else darah nya pada abis
+            }else{
+              client.sendMessage(message.from,`Musuhmu belum ada gacoannya mas`);
+            }//else kalo ga punya gacoan
+          }else{
+            client.sendMessage(message.from, `Pertarungan sedang berlangsung, Arenanya cuma satu cuk`);
+            setTimeout(async () => {
+              await DataData.child('delay').child('fightCooldown').set('true');
+            }, 60000)
+          }//else if cooldown false
+        });//close DataData fight Cooldown
+    };
+    //function pokemon fight vs AI
+    function fightAiPokemon(P1, P2){
+      const maxHPP1 = P1[0].MAXHP;
+        DataData.child('delay').child('fightCooldown').once('value', async(snapshot) => {
+          const cooldown = snapshot.val();
+          if(cooldown === "true"){
+            if(P1.length > 0 && P2.length > 0){
+              if(P1[0].HP <= 0){
+                client.sendMessage(message.from,`Darahmu habis mas\n!use potion dulu gih`);
+              }else{
+                client.sendMessage(message.from,`Pertarungan antara ${P1[0].namaPokemon} VS ${P2[0].namaPokemon}`);
+                DataData.child('delay').child('fightCooldown').set('false');
+                let P1HP = P1[0].HP;
+                let P2HP = P2[0].HP;
+
+                      const fightLoop = async () => {
+                        let winner = null;
+                        const P1attck = (P1[0].ATTACK / P2[0].DEFENSE * 82).toFixed(0);
+                        const P2attck = (P2[0].ATTACK / P1[0].DEFENSE * 20).toFixed(0);
+                        const P1CriticalChance = P1HP <= (P1[0].MAX_HP * 0.1) ? 0.6 : 0.2;
+                        const P2CriticalChance = P2HP <= (P2[0].MAX_HP * 0.1) ? 0.6 : 0.2;
+                        const isP1Critical = Math.random() <= P1CriticalChance;
+                        const isP2Critical = Math.random() <= P2CriticalChance;
+                        const P1AttckFinal = isP1Critical ? P1attck * 10 : P1attck;
+                        const P2AttckFinal = isP2Critical ? P2attck * 10 : P2attck;
+                        P1HP -= P2AttckFinal;
+                        P2HP -= P1AttckFinal;
+                        P1HP = Math.max(0, P1HP);
+                        P2HP = Math.max(0, P2HP);
+                        console.log(`P1 HP: ${P1HP}`)
+                        console.log(`P1 ATTACK: ${P1attck}`)
+                        console.log(`P1 ATTACK if Crit: ${P1AttckFinal}`)
+                        console.log(`P2 HP: ${P2HP}`)
+                        console.log(`P2 ATTACK: ${P2attck}`)
+                        console.log(`P2 ATTACK if Crit: ${P2AttckFinal}`)
+                          if(P1HP > 0 && P2HP > 0){
+                            setTimeout(fightLoop, 10);
+                            //client.sendMessage(message.from,`${P1[0].namaPokemon} Menyerang dengan ${P1AttckFinal} dan ${P2[0].namaPokemon} Menyerang dengan ${P2AttckFinal}`);
+                          }else{
+                            if(P1HP <= 0 && P2HP <= 0){
+                              const expDraw1 = P1[0].EXP + 1;
+                              const levelAfterBattleP1 = calculateEXP(P1[0].EXP + 1);
+                              const statIncreaseP1 = increaseStatsByLevel(P1[0].LVL, levelAfterBattleP1);
+                              const pokemonAfterBattleP1 = {
+                                namaPokemon: P1[0].namaPokemon,
+                                HP: P1HP,
+                                MAXHP: maxHPP1 + statIncreaseP1.HP,
+                                ATTACK: P1[0].ATTACK + statIncreaseP1.ATTACK, 
+                                DEFENSE: P1[0].DEFENSE + statIncreaseP1.DEFENSE,
+                                SPEED: P1[0].SPEED + statIncreaseP1.SPEED, 
+                                LVL: levelAfterBattleP1,
+                                EXP: expDraw1,
+                                TYPE: P1[0].TYPE
+                              };
+                              RefGacoan.set(pokemonAfterBattleP1);
+                              client.sendMessage(message.from,`Pertarungan berakhir dengan hasil seri!`);
+                            }else if(P1HP <= 0){
+                              const minExp = 1;
+                              const maxExp = 2;
+                              const randomExp = Math.floor(Math.random() * (maxExp - minExp + 1)) + minExp;
+                              console.log(`EXP KALAH : ${randomExp}`)
+                              const expDraw1 = P1[0].EXP + randomExp;
+                              const levelAfterBattleP1 = calculateEXP(P1[0].EXP + randomExp)
+                              const statIncreaseP1 = increaseStatsByLevel(P1[0].LVL,levelAfterBattleP1);
+                              const pokemonAfterBattleP1 = {
+                                namaPokemon: P1[0].namaPokemon,
+                                HP: P1HP,
+                                MAXHP: maxHPP1 + statIncreaseP1.HP,
+                                ATTACK: P1[0].ATTACK + statIncreaseP1.ATTACK, 
+                                DEFENSE: P1[0].DEFENSE + statIncreaseP1.DEFENSE,
+                                SPEED: P1[0].SPEED + statIncreaseP1.SPEED, 
+                                LVL: levelAfterBattleP1,
+                                EXP: expDraw1,
+                                TYPE: P1[0].TYPE
+                              };
+                              await RefGacoan.set(pokemonAfterBattleP1);
+                              winner = P2[0].namaPokemon;
+                              if (levelAfterBattleP1 > P1[0].LVL) {
+                              const levelUpInfo = `LevelUp: ${levelAfterBattleP1}\nHP: +${statIncreaseP1.HP}\nAttack: +${statIncreaseP1.ATTACK}\nDefense: +${statIncreaseP1.DEFENSE}\nSPeed: ${statIncreaseP1.SPEED}`;
+                              client.sendMessage(message.from, `Pertarungan berakhir! ${winner} adalah pemenangnya!\n${levelUpInfo}`);
+                            } else {
+                              client.sendMessage(message.from, `Pertarungan berakhir! ${winner} adalah pemenangnya!`);
+                            }
+                            }else{
+                              let minExp = 1;
+                              let maxExp = 10;
+                              if(P1[0].LVL <= 15){
+                                minExp = 1;
+                                maxExp = 10;
+                              }else if(P1[0].LVL >= 16 && P1[0].LVL <= 25){
+                                minExp = 10;
+                                maxExp = 50;
+                              }else if(P1[0].LVL >= 26 && P1[0].LVL <= 30){
+                                minExp = 50;
+                                maxExp = 100;
+                              }else if(P1[0].LVL >= 31 && P1[0].LVL <= 36){
+                                minExp = 100;
+                                maxExp = 250;
+                              }else if(P1[0].LVL >= 37 && P1[0].LVL <= 40){
+                                minExp = 250;
+                                maxExp = 500;
+                              }else if(P1[0].LVL >= 41 && P1[0].LVL <= 45){
+                                minExp = 500;
+                                maxExp = 1000;
+                              }else if(P1[0].LVL >= 46 && P1[0].LVL <= 50){
+                                minExp = 500;
+                                maxExp = 2000;
+                              }else{
+                                minExp = 1000;
+                                maxExp = 1575;
+                              }
+                              setTimeout(async () => {
+
+                                const randomExp = Math.floor(Math.random() * (maxExp - minExp + 1)) + minExp;
+                                const expDraw1 = P1[0].EXP + randomExp;
+                                console.log(`EXP: ${randomExp}`);
+                                const levelAfterBattleP1 = calculateEXP(P1[0].EXP + randomExp)
+                              const statIncreaseP1 = increaseStatsByLevel(P1[0].LVL,levelAfterBattleP1);
+                              const pokemonAfterBattleP1 = {
+                                namaPokemon: P1[0].namaPokemon,
+                                HP: P1HP,
+                                MAXHP: maxHPP1 + statIncreaseP1.HP,
+                                ATTACK: P1[0].ATTACK + statIncreaseP1.ATTACK, 
+                                DEFENSE: P1[0].DEFENSE + statIncreaseP1.DEFENSE,
+                                SPEED: P1[0].SPEED + statIncreaseP1.SPEED, 
+                                LVL: levelAfterBattleP1,
+                                EXP: expDraw1,
+                                TYPE: P1[0].TYPE
+                              };
+                              await RefGacoan.set(pokemonAfterBattleP1);
+                              winner = P1[0].namaPokemon;
+                              if (levelAfterBattleP1 > P1[0].LVL) {
+                                const levelUpInfo = `LevelUp: ${levelAfterBattleP1}\nHP: +${statIncreaseP1.HP}\nAttack: +${statIncreaseP1.ATTACK}\nDefense: +${statIncreaseP1.DEFENSE}\nSPeed: ${statIncreaseP1.SPEED}`;
+                                client.sendMessage(message.from, `Pertarungan berakhir! ${winner} adalah pemenangnya!\n${levelUpInfo}`);
+                              } else {
+                                client.sendMessage(message.from, `Pertarungan berakhir! ${winner} adalah pemenangnya!`);
+                              }
+                            }, 2000)
+                            }
+                            await RefFightDelay.set('false');
+                          }//else jika fight loop selesai
+                        };//fightloop
+                    setTimeout(async () => {
+                      await DataData.child('delay').child('fightCooldown').set('true');
+                    }, 60000);
+                    setTimeout(async () => {
+                      await RefFightDelay.set('true');
+                    }, 300000);
+                    setTimeout(fightLoop, 10);
+              }//else darah nya pada abis
+            }else{
+              client.sendMessage(message.from,`Musuhmu belum ada gacoannya mas`);
+            }//else kalo ga punya gacoan
+          }else{
+            client.sendMessage(message.from, `Pertarungan sedang cooldown, Arenanya cuma satu cuk`);
+            setTimeout(async () => {
+              await DataData.child('delay').child('fightCooldown').set('true');
+            }, 5000)
+          }//else if cooldown false
+        });//close DataData fight Cooldown
+    };
+    
+    
+//Pesan Balasan 
+      if (pesan) {
+        await ToxicRef.once('value', (snapshot) => {
+          const toxicWords = snapshot.val() || [];
+          const pesanArray = pesan.toLowerCase().split(' ');
+          const foundToxicWord = pesanArray.find((word) => {
+            return toxicWords.findIndex((toxicWord) => word === toxicWord) !== -1;
+          });
+
+          if (foundToxicWord) {
+            ReplyRef.once('value', (snapshot) => {
+              const balasan = snapshot.val() || [];
+              const pesanBalasanArray = Object.values(balasan);
+              const pesanBalasan = pesanBalasanArray[Math.floor(Math.random() * pesanBalasanArray.length)] || 'Pesan balasan default';
+              message.reply(pesanBalasan);
+            });
+          }
+        });
+      }
+      if (kataTerlarang.some(kata => pesan.match(kata))) {
+          let sisaPo = "";
+          let sisaRe = "";
+          const MultiplyToxicWord = await Multiply.child('ToxicX').once('value');
+          const mul = MultiplyToxicWord.val() || 0;
+          const diKali = mul.dikali;
+      
+          const updatePoint = async () => {
+              const snapshot = await RefPoint.once('value');
+              const poin = snapshot.val() || 0;
+              const pointMultiply = 10000 * diKali;
+              const pinalty = poin - pointMultiply;
+              await RefPoint.set(pinalty);
+              sisaPo = poin.toLocaleString('id-ID', { minimumFractionDigits: 0 });
+          };
+      
+          const updateReputation = async () => {
+              const snapshot = await RefRep.once('value');
+              const reputasi = snapshot.val() || 0;
+              const repMultiply = 500 * diKali;
+              const pinalty = reputasi - repMultiply;
+              await RefRep.set(pinalty);
+              sisaRe = reputasi.toString();
+          };
+      
+          Promise.all([updatePoint(), updateReputation()]).then(async () => {
+            const pointFinal = 10000 * diKali;
+            const repFinal = 500 * diKali;
+              await message.reply(`priiiit point -${pointFinal.toLocaleString()} x${diKali}.00, Reputasi -${repFinal} x${diKali}.00.\nsisa point: ${sisaPo}\nReputasi: ${sisaRe}`);
+          });
+      }
 //ADMIN COMMAND 
       if(sanitizedSender === process.env.ADMIN_1 || sanitizedSender === process.env.ADMIN_2){
         const pesanAdmin = message.body;
@@ -294,7 +923,49 @@ client.on('message', async (message) => {
         }
       }
     //Command
-   
+    if (pesan === '!help' || pesan === '!bot'){
+        const commands = [
+          { p: '!berita', label: 'Berita Terkini' },
+          { p: '!cuaca', label: 'Info Cuaca' },
+          { p: '!doa', label: 'Doa Harian' },
+          { p: '!info <cuaca/mabar>', label: 'Cek info cuaca dan info mabar' },
+          { p: '!kirim <Tag orangnya>', label: 'Kirim Point ke Teman' },
+          { p: '!mabar <pesan mabar apa game apa kapan>', label: 'Tambah info mabar' },
+          { p: '!nama <isi nama kalian>', label: 'isi namamu di grub ini!' },
+          { p: '!quotes', label: 'Apa Quotes Untuk mu?' },
+          { p: '!rate', label: 'Cek Rate 1USD = Rp xx.xxx' },
+          { p: '!rank', label: 'Cek peringkat tertinggi' },
+          { p: '!rank point', label: 'Cek Point terbanyak' },
+          { p: '!rules', label: 'Aturan' },
+          { p: '!stat', label: 'Cek Point, Reputasi & status' },
+          { p: '!ribut <tag yang mau di ajak ribut>', label: 'Kalo ada masalah ributnya pake ini ya' },
+          { p: '-- *GAMES* --', label: '-- *GAMES* --' },
+          { p: '!togel <masukan 4 digit angka>', label: 'Main Togel ngebid 5.000Point kalo menang dapet 50.000Point' },
+          { p: '!slot', label: 'Main Slot bayar 2.500Point kalo menang dapet 10.000Point' },
+          { p: 'apakah <pertanyaanmu>', label: 'tanyakan bot dengan apakah... maka bot akan menjawab iya atau tidak' },
+          { p: '!pap', label: 'ngirim pap jahat' },
+          { p: '!catch', label: 'Tangkap Pokemon' },
+          { p: '!pokeball', label: 'nyari pokeballs' },
+          { p: '!cektas', label: 'cek inventory kalian' },
+          { p: '!cekgacoan <tag orangnya>', label: 'ngecek gacoan lawan lu, biar ada gambaran' },
+          { p: '!sell <angka pokemon yang tertera pada !pokedex> <harga jual>', label: 'jual pokemon mu ke market' },
+          { p: '!buy <pokeball/pokemon> <jumlah pokeball/angka yang tertera di market>', label: 'beli pokemon dari market' },
+          { p: '!market', label: 'cek market list pokemon' },
+          { p: '!pokedex', label: 'cek list pokemon yang udah kalian dapat' },
+          { p: '!setgacoan <angka yang tertera pada !pokedex>', label: 'set gacoan pokemon mu dan ngadu dengan teman mu' },
+          { p: '!fight <tag orangnya>', label: 'ajak temen kalian berantem pokemon, yg menang dapet 100reputasi' },
+          { p: '!redeem <Masukin nomer hp>', label: 'Redeem 102.500Point ke Pulsa All Operator Rp 10.000' },
+        ];
+        
+        let menuText = '*ETMC-BOT nih boss* \n\n';
+        
+        commands.forEach((command, index) => {
+            menuText += `${index + 1}. ${command.p} - ${command.label}\n`;
+        });
+        
+        menuText += '\nBaru ada Command Ini Doang ni\nMade By : W0lV\nMaintenance By : W0lV & ETMC';
+        client.sendMessage(message.from, menuText);
+    }
     if(pesan === '!rules'){
         client.sendMessage(message.from,`Aturan dibuat buat di langgar, makin sering *toxic* *reputasi* lu *ancur*\ncek reputasi !stat.\ngaboleh ngirim link *bokep* di sini kalo mau japri,\nyg mau transaksi silahkan di japri juga\nOke???\n\n*W0lv*`)
     }
@@ -556,9 +1227,8 @@ client.on('message', async (message) => {
         }
       }//if absen false
     });//absen
-
-
     }
+    
     if (pesan === '!stat') {
     let repu = "";
     let point = "";
@@ -770,8 +1440,24 @@ client.on('message', async (message) => {
         client.sendMessage(message.from,`XIXIXIXI🤣🤣🤣`)
       }, 5000)
     }, 3000);
-
+    
+  }
+  if (pesan.startsWith(`!cek kodam`)) {
+    client.sendMessage(message.from,`Berusaha Terhubung ke alam Ghoib`);
+      await CekKodam.once('value', (ss) => {
+        const kodam = ss.val() || [];
+        setTimeout(() => {
+          if (kodam.length > 0) {
+            const randomIndex = Math.floor(Math.random() * kodam.length);
+            const selectedKodam = kodam[randomIndex];
+            client.sendMessage(message.from,`Kodammu ${selectedKodam}`);
+          } else {
+            client.sendMessage(message.from,'Gagal Terhubung Dunia Ghoib, silahakn ulangi');
+          }
+        }, 3000)
+      });
     }
+    
     if(pesan.startsWith(`!makan apa`)){
     const namaMakanan =  [
       "Asinan", 
@@ -792,7 +1478,6 @@ client.on('message', async (message) => {
           "Semur Jengkol", "Serabi", "Seruit", "Sop Buntut", "Sop Kambing",
           "Soto", "Sup Konro", "Tahu Gejrot", "Woku"
       ]
-
 
     function getRandomMakanan() {
       const randomIndex = Math.floor(Math.random() * namaMakanan.length);
@@ -1866,6 +2551,52 @@ client.on('message', async (message) => {
     }
     if(pesan.startsWith('!market')){
       client.sendMessage(message.from, 'Di Pindahin ke sini\nhttps://www.rraf-project.site/')
+     /* const Market = [];
+      await MarketRef.once('value', async (snapshot) =>{
+        const marketData = snapshot.val() || {};
+
+        Object.keys(marketData).forEach((id) => {
+          const pokemonName = marketData[id].namaPokemon;
+          const pokemonHP = marketData[id].HP;
+          const pokemonATT = marketData[id].ATTACK;
+          const pokemonDEFF = marketData[id].DEFENSE;
+          const pokemonSPD = marketData[id].SPEED;
+          const pokemonTYPE = marketData[id].TYPE;
+          const pokemonHARGA = marketData[id].harga;
+          const pokemonPENJUAL = marketData[id].penjual;
+
+          const pokemonList = {
+            namaPokemon: pokemonName,
+            HP: pokemonHP,
+            ATTACK: pokemonATT,
+            DEFENSE: pokemonDEFF,
+            SPEED: pokemonSPD,
+            TYPE: pokemonTYPE,
+            harga: pokemonHARGA,
+            penjual: pokemonPENJUAL,
+          };
+          Market.push(pokemonList);
+        });
+
+        setTimeout(async () => {
+          if (Market.length === 0) {
+            message.reply('*Welcome To Pokemon Market*\nMarket Masih Kosong nih');
+          } else {
+            let marketList = '';
+            Market.forEach((pokemonList, index) => {
+              const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, TYPE, harga } = pokemonList;
+              marketList += `${index + 1}. ${namaPokemon}\n`;
+              marketList += `   - HP: ${HP}\n`;
+              marketList += `   - Attack  : ${ATTACK}\n`;
+              marketList += `   - Defense: ${DEFENSE}\n`;
+              marketList += `   - Speed: ${SPEED}\n`;
+              marketList += `   - Type: ${TYPE}\n`;
+              marketList += `   - HARGA: ${harga.toLocaleString('id-ID', { minimumFractionDigits: 0 })}Point\n`;
+            });
+            client.sendMessage(message.from,`*Welcome To Pokemon Market*\n*POKEMON*\n${marketList}`);
+          }
+        },1000)
+      });*/
     }
   //end of the line
 });

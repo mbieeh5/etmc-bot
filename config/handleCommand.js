@@ -1,4 +1,4 @@
-const {witAi, client} = require('./config')
+const witAi = require('./config').witAi
 const db = require('./config').db;
 const path = require('path')
 const fs = require('fs');
@@ -16,15 +16,38 @@ const kataTerlarang = [
 ];
 
 const commands = {};
-fs.readdirSync(path.join(__dirname, 'commands')).forEach(file => {
+fs.readdirSync(path.join(__dirname, '../commands')).forEach(file => {
   if(file.endsWith('.js')) {
     const commandName = file.replace('.js', '');
-    commands[commandName] = require(`../commands/${file}`);
+    try {
+      commands[commandName] = require(`../commands/${file}`);
+      console.log(`Loaded command: ${commandName}`);
+    } catch (error) {
+      console.error(`Failed to load command ${commandName}:`, error);
+    }
   }
 });
 
+const updatePointsAndReputation = async (userRef, pointPerHuruf, reputasiIncrement) => {
+  const pointSnap = await userRef.child('point').once('value');
+  const repSnap = await userRef.child('reputasi').once('value');
+  const expSnap = await userRef.child('exp').once('value');
 
-async function handleCommand(message) {
+  const currentPoint = pointSnap.val() || 0;
+  const currentReputasi = repSnap.val() || 0;
+  const currentExp = expSnap.val() || 0;
+
+  const newPoint = currentPoint + (pointPerHuruf === 0 ? 1 : Math.min(pointPerHuruf, 511));
+  const newReputasi = currentReputasi + reputasiIncrement;
+  const newExp = currentExp + 1;
+
+  await userRef.child('point').set(newPoint);
+  await userRef.child('reputasi').set(newReputasi);
+  await userRef.child('exp').set(newExp);
+};
+
+
+async function handleCommand(message, client) {
   const sA = message.author;
   const sender = message.from;
   const corection = sA != undefined ? sA : sender;
@@ -40,17 +63,7 @@ async function handleCommand(message) {
   const point = {};
   const reputasi = {};
 
-
-
     if (pesan) {
-      witAi.message(pesan, {})
-        .then(data => {
-          //console.log(`AI Response: ${JSON.stringify(data)}`);
-          const TraitNormal = JSON.stringify(data.traits.normal[0].value);
-          client.sendMessage(message.from, TraitNormal);
-        })
-        .catch(console.error);
-
       await ToxicRef.once('value', (ss) => {
         const toxicWords = ss.val() || [];
         const pesanfilter = pesan.split(' ');
@@ -97,52 +110,42 @@ async function handleCommand(message) {
             await message.reply(`priiiitt\npoint *-${pointFinal.toLocaleString()} x${dikali},00*\n*Reputasi -${repFinal.toLocaleString()} x${dikali},00*\nsisa point : _${sisaPo}_\nReputasi : _${sisaRe}_`)
         })
       }
-      if(!point[corection]){
-        point[corection] = 0;
-      } for (const threshold of thresholds) {
-        if(point[corection] >= threshold){
-          const sanitizedSenderF = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-          const pointAdded = pointRef.child(sanitizedSenderF).child('point');
-          pointAdded.once('value', async (ss) => {
-            const poin = ss.val() || 0;
-            const pointPerHuruf = pesan.length * 3.00;
-            console.log(pointPerHuruf);
+      if (!point[corection]) point[corection] = 0;
+if (!reputasi[corection]) reputasi[corection] = 0;
 
-            if(pointPerHuruf === 0){
-              const pointIfNol = poin + 1;
-              await pointRef.child(sanitizedSender).child('point').set(pointIfNol);
-            } else if(pointPerHuruf <= 511) {
-              const pointIfUnder = poin + pointPerHuruf;
-              await pointRef.child(sanitizedSender).child('point').set(pointIfUnder);
-            }
-          })
-          break;
-        }
-      }
-      if(!reputasi[corection]){
-        reputasi[corection] = 0;
-    } for (const threshold of thresholds){
-      const sanitizedSenderC = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-      if(reputasi[corection] >= threshold){
-        const reputasiAdded = pointRef.child(sanitizedSenderC).child('reputasi');
-        reputasiAdded.once('value', async (ss) => {
-          const reputasi = ss.val() || 0
-          const newRep = parseInt(reputasi + 5);
-          await reputasiAdded.set(newRep);
-        });
-      }
-      break;
+const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+const userRef = pointRef.child(sanitizedSender);
+
+for (const threshold of thresholds) {
+    if (point[corection] >= threshold || reputasi[corection] >= threshold) {
+        const pointPerHuruf = pesan.length * 3.00;
+        const reputasiIncrement = 5;
+        await updatePointsAndReputation(userRef, pointPerHuruf, reputasiIncrement);
+        break;
     }
-    if(pesan.startsWith('!')) {
-      const commandName = pesan.substring(1).split(' ')[0];
-      const command = commands[commandName];
-        if(command && typeof command.execute === 'function') {
-          const Response = await command.execute(message);
-          if(Response) {
-            await client.sendMessage(message.from, Response);
-          }
-          return;
+}
+    if (pesan.startsWith('!')) {
+        const commandName = pesan.substring(1).split(' ')[0];
+        const command = commands[commandName];
+
+        if (typeof command === 'function') { 
+            try {
+                const Response = await command(message); 
+                console.log({Response})
+                if (Response) {
+                    await client.sendMessage(message.from, Response);
+                    if (commandName === 'redeem') {
+                      await client.sendMessage(process.env.ADMIN_3, Response);
+                  }  
+                }
+            } catch (error) {
+                console.error(`Error executing command ${commandName}:`, error);
+            }
+            return;
         }
+    }
+    if(pesan.startsWith('!ping')){
+      client.sendMessage(message.from, 'pong');
     }
   }
 }

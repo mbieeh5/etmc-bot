@@ -1,8 +1,8 @@
 const axios = require('axios');
 
-exports.module = async (message) => {
-    axios.get(`https://api-berita-indonesia.vercel.app/cnn/terbaru/`)
-    .then(response => {
+module.exports = async (message) => {
+    try {
+        const response = await axios.get('https://api-berita-indonesia.vercel.app/cnn/terbaru/');
         const resp = response.data;
         const posts = resp.data.posts.slice();
         const randomIndex = Math.floor(Math.random() * posts.length);
@@ -16,8 +16,8 @@ exports.module = async (message) => {
         const year = date.getUTCFullYear();
         const formattedDate = `${hours}:${minutes}, ${day}/${month}/${year}`;
         return `*${randomData.title}* \nTanggal: ${formattedDate}. \n\n${randomData.description} \n\nBacaSelengkapnya : ${randomData.link}`;
-    })
-    .catch(error => {
-        console.log(error);
-    });
-}
+    } catch (error) {
+        console.error('Error fetching news:', error);
+        return 'Maaf, terjadi kesalahan saat mengambil berita.';
+    }
+};

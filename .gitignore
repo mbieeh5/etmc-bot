@@ -13,6 +13,7 @@ firebase-debug.*.log*
 .firebase/
 # Whatsapp Auth
 .wwebjs_auth
+.wwebjs_cache
 # Firebase config
 etmc-whatsapp-bot.json
 firebase.json
