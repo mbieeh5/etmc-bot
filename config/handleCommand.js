@@ -1,4 +1,5 @@
 const witAi = require('./config').witAi
+const GroupChat = require('whatsapp-web.js/src/structures/GroupChat');
 const db = require('./config').db;
 const path = require('path')
 const fs = require('fs');
@@ -144,8 +145,12 @@ for (const threshold of thresholds) {
             return;
         }
     }
-    if(pesan.startsWith('!ping')){
-      client.sendMessage(message.from, 'pong');
+    if(pesan.startsWith('%')){
+      if(sanitizedSender === process.env.ADMIN_1 || sanitizedSender === process.env.ADMIN_2){
+        client.sendMessage(message.from, 'you a Super Admin');
+      }else{
+        client.sendMessage(message.from, 'prefix "%" used for Super Admin Only')
+      }
     }
   }
 }

@@ -60,7 +60,7 @@ function UpdateStock() {
                     DataData.child('delay').child('ultraball').update({ stock: SUltraball + 10 });
                     setTimeout(() => {
                       const dataBarang = `Elixir : ${SElixir}\nPotion : ${SPotion}\nTraining Ticket : ${STrainingTicket}\nPokeballs : ${SPokeballs}\nGreatballs : ${SGreatballs}\nUltraballs : ${SUltraball}\nMasterballs : ${SMasterball}\nBelanjanya di => https://www.rraf-project.site/shopping/pokemon`
-                      client.sendMessage(`${process.env.GROUP_1}`, `Barang Telah Restock\n${dataBarang}`);
+                      console.log(`Barang Telah Restock\n${dataBarang}`);
                     },3000)
                   })
                 })
@@ -71,37 +71,16 @@ function UpdateStock() {
       })
 }
 
-function selesaiRestart() {
-
-  console.log("Silakan isi alasan restart server:");
-  const readline = require('readline').createInterface({
-      input: process.stdin,
-      output: process.stdout
+  client.on('ready', () => {
+    console.log(`Server Restart Done\nStatus: *ONLINE*\nReset Absen: *OK*\nReindex Database: *OK*\nLoaded Commands: *Finish*`);
+    RestartServer();
   });
-
-  readline.question('Alasan restart: ', (alasan) => {
-      console.log(`Alasan restart: ${alasan}`);
-      readline.close();
-      eventEmitter.emit('selesaiRestart', alasan);
-  });
-}
 
     // settings jam/reset Stock
     const now = new Date();
     const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
     const timeUntilNextMidnight = nextMidnight - now;
     setTimeout(UpdateStock, timeUntilNextMidnight);
-
-selesaiRestart();
-
-
-eventEmitter.on('selesaiRestart', (alasan) => {
-  client.on('ready', () => {
-    console.log('Client is ready!')
-    //client.sendMessage(`6285210306474_c_us`, `Server Restart Done\nStatus: *ONLINE*\nReset Absen: *OK*\nReindex Database: *OK*\nReason Restart: ${alasan}`);
-    RestartServer();
-  });
-})
 
 client.on('message', async (message) => {
     handleCommand(message,client);
