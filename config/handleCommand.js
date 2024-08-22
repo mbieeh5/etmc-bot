@@ -65,12 +65,12 @@ async function handleCommand(message, client) {
   const reputasi = {};
 
     if (pesan) {
-      await ToxicRef.once('value', (ss) => {
-        const toxicWords = ss.val() || [];
-        const pesanfilter = pesan.split(' ');
-        const foundToxicWord = pesanfilter.find((word) => {
-          return toxicWords.findIndex((toxicWord) => word === toxicWord) !== -1;
-        }); 
+        await ToxicRef.once('value', (ss) => {
+          const toxicWords = ss.val() || [];
+          const pesanfilter = pesan.split(' ');
+          const foundToxicWord = pesanfilter.find((word) => {
+            return toxicWords.findIndex((toxicWord) => word === toxicWord) !== -1;
+          }); 
         if(foundToxicWord){
           ReplyRef.once('value', (ss) => {
             const balasan = ss.val() || [];
@@ -86,45 +86,48 @@ async function handleCommand(message, client) {
         const MultiplyToxicWord = await Multiply.child('ToxicX').once('value');
         const mul = MultiplyToxicWord.val() || 0;
         const dikali = mul.dikali;
-
+        
         const updatePoint = async () => {
           const ss = await RefPoint.once('value');
           const poin = ss.val() || 0;
-          const pointMultiply = 5000* dikali;
-          const pinalty = poin - pointMultiply;
+          const pointMultiply = 50000 * dikali;
+          const pinalty = await poin - pointMultiply;
+          console.log({poin, pinalty, pointMultiply})
           await RefPoint.set(pinalty);
-          sisaPo = await pinalty.toLocaleString('id-ID');
+          return sisaPo = pinalty.toLocaleString('id-ID');
         }
-
+        
         const updateReputation = async () => {
           const ss = await RefRep.once('value');
           const Rep = ss.val() || 0;
-          const repMultiply = 50 * dikali;
-          const pinalty = Rep - repMultiply;
+          const repMultiply = 500 * dikali;
+          const pinalty = await Rep - repMultiply;
           await RefRep.set(pinalty);
-          sisaRe = await pinalty.toLocaleString('id-ID');
+          console.log({Rep, pinalty, repMultiply})
+          return sisaRe = pinalty.toLocaleString('id-ID');
         }
 
         Promise.all([updatePoint(), updateReputation()]).then(async () => {
           const pointFinal = 5000 * dikali;
           const repFinal = 50 * dikali;
-            await message.reply(`priiiitt\npoint *-${pointFinal.toLocaleString()} x${dikali},00*\n*Reputasi -${repFinal.toLocaleString()} x${dikali},00*\nsisa point : _${sisaPo}_\nReputasi : _${sisaRe}_`)
+          await message.reply(`priiiitt\npoint *-${pointFinal.toLocaleString()} x${dikali},00*\n*Reputasi -${repFinal.toLocaleString()} x${dikali},00*\nsisa point : _${sisaPo}_\nReputasi : _${sisaRe}_`)
         })
-      }
-      if (!point[corection]) point[corection] = 0;
-if (!reputasi[corection]) reputasi[corection] = 0;
+      }else{
+        if (!point[corection]) point[corection] = 0;
+    if (!reputasi[corection]) reputasi[corection] = 0;
 
-const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-const userRef = pointRef.child(sanitizedSender);
-
-for (const threshold of thresholds) {
-    if (point[corection] >= threshold || reputasi[corection] >= threshold) {
-        const pointPerHuruf = pesan.length * 3.00;
-        const reputasiIncrement = 5;
-        await updatePointsAndReputation(userRef, pointPerHuruf, reputasiIncrement);
-        break;
+    const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+    const userRef = pointRef.child(sanitizedSender);
+    
+    for (const threshold of thresholds) {
+        if (point[corection] >= threshold || reputasi[corection] >= threshold) {
+            const pointPerHuruf = pesan.length * 3.00;
+            const reputasiIncrement = 5;
+            await updatePointsAndReputation(userRef, pointPerHuruf, reputasiIncrement);
+            break;
+        }
     }
-}
+
     if (pesan.startsWith('!')) {
         const commandName = pesan.substring(1).split(' ')[0];
         const command = commands[commandName];
@@ -153,6 +156,7 @@ for (const threshold of thresholds) {
       }
     }
   }
+}
 }
   
   module.exports = {
