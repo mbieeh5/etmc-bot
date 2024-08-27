@@ -1,5 +1,3 @@
-const witAi = require('./config').witAi
-const GroupChat = require('whatsapp-web.js/src/structures/GroupChat');
 const db = require('./config').db;
 const path = require('path')
 const fs = require('fs');
@@ -17,6 +15,7 @@ const kataTerlarang = [
 ];
 
 const commands = {};
+const adminCommands = {}
 fs.readdirSync(path.join(__dirname, '../commands')).forEach(file => {
   if(file.endsWith('.js')) {
     const commandName = file.replace('.js', '');
@@ -25,6 +24,17 @@ fs.readdirSync(path.join(__dirname, '../commands')).forEach(file => {
       console.log(`Loaded command: ${commandName}`);
     } catch (error) {
       console.error(`Failed to load command ${commandName}:`, error);
+    }
+  }
+});
+fs.readdirSync(path.join(__dirname, '../commands/adminCommand')).forEach(file => {
+  if(file.endsWith('.js')) {
+    const adminCommandName = file.replace('.js', '');
+    try {
+      adminCommands[adminCommandName] = require(`../commands/adminCommand/${file}`);
+      console.log(`Loaded Admin command: ${adminCommandName}`);
+    } catch (error) {
+      console.error(`Failed to load command ${adminCommandName}:`, error);
     }
   }
 });
@@ -150,7 +160,20 @@ async function handleCommand(message, client) {
     }
     if(pesan.startsWith('%')){
       if(sanitizedSender === process.env.ADMIN_1 || sanitizedSender === process.env.ADMIN_2){
-        client.sendMessage(message.from, 'you a Super Admin');
+        const commandName = pesan.substring(1).split(' ')[0];
+        const command = adminCommands[commandName];
+
+        if(typeof command === 'function'){
+          try {
+              const ResponseAdmin = await command(message);
+              console.log({ResponseAdmin})
+              if(ResponseAdmin){
+                await client.sendMessage(message.from, ResponseAdmin);
+              }
+          } catch (error) { 
+            console.error(`error executing command ${commandName}: `, error)
+          }
+        }
       }else{
         client.sendMessage(message.from, 'prefix "%" used for Super Admin Only')
       }

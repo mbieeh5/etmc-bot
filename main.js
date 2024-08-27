@@ -1,7 +1,7 @@
 const qrcode = require('qrcode-terminal');
 const axios = require('axios');
 const QuotesAPI = require('quote-indo');
-const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js');
+const  { Client, MessageMedia,GroupChat,  LocalAuth } = require('whatsapp-web.js');
 const {Wit} = require('node-wit');
 const admin = require('firebase-admin');
 const serviceAccount = require('./etmc-whatsapp-bot.json');
@@ -128,7 +128,7 @@ eventEmitter.on('selesaiRestart', (alasan) => {
 })
 
 client.on('message', async (message) => {
-  
+  client.getCommonGroups()
   const sA = message.author;
   const sender = message.from;
   const corection = sA != undefined ? sA : sender;
@@ -1476,7 +1476,7 @@ client.on('message', async (message) => {
         "Opor Ayam", "Otak-otak", "Pecel Lele", "Pempek", "Pepes", 
         "Perkedel", "Rawon", "Rendang", "Sambal", "Sate", "Sayur Asem",
           "Semur Jengkol", "Serabi", "Seruit", "Sop Buntut", "Sop Kambing",
-          "Soto", "Sup Konro", "Tahu Gejrot", "Woku"
+          "Soto", "Sup Konro", "Tahu Gejrot", "Woku", "Ayam Bakar", "Mie Aceh", "Mie Bangladesh", "Sate Taichan"
       ]
 
     function getRandomMakanan() {
