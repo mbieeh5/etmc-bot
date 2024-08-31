@@ -1,5 +1,6 @@
 const { db } = require('../config/config');
 const MarketRef = db.ref('dataData/market');
+const EtcRef = db.ref('dataData/delay');
 
 module.exports = async (message) => {
     const Market = [];
@@ -7,7 +8,15 @@ module.exports = async (message) => {
     try {
         const snapshot = await MarketRef.once('value');
         const marketData = snapshot.val() || {};
-
+        const ssStock = await EtcRef.once('value');
+        const Stock = ssStock.val() || {};
+        const Elixir = Stock.elixir;
+        const Potion = Stock.potion;
+        const Pokeballs = Stock.pokeballs;
+        const Greatballs = Stock.greatballs;
+        const Ultraballs = Stock.ultraball;
+        const Masterballs = Stock.masterball;
+        const TrainingTicket = Stock.trainingTicket;
         // Mengumpulkan data Pokémon dari pasar
         Object.keys(marketData).forEach((id) => {
             const pokemon = marketData[id];
@@ -38,7 +47,7 @@ module.exports = async (message) => {
                 marketList += `   - Speed: ${SPEED}\n`;
                 marketList += `   - Type: ${TYPE}\n`;
             });
-            marketList = `*Welcome To Pokemon Shop*\n1. Potion: 0\n2. Elixir: 0\n3. Pokeballs: 0\n4. Greatballs: 0\n5. Ultraballs: 0\n6. Masterballs: 0\n7. Training Ticket: 0\nItem di atas bertambah Setiap Malam\n*POKEMON*\n${marketList}`;
+            marketList = `*Welcome To Pokemon Shop*\n1. Potion (@${Potion.harga} Point): ${Potion.stock}\n2. Elixir (@${Elixir.harga} Point): ${Elixir.stock}\n3. Pokeballs (@${Pokeballs.harga} Point): ${Pokeballs.stock}\n4. Greatballs (@${TrainingTicket.harga} Point): ${Greatballs.stock}\n5. Ultraballs (@${Ultraballs.harga} Point): ${Ultraballs.stock}\n6. Masterballs (@${Masterballs.harga} Point): ${Masterballs.stock}\n7. Training Ticket (@${TrainingTicket.harga} Point): ${TrainingTicket.stock}\nItem di atas bertambah Setiap Malam\n*POKEMON*\n${marketList}`;
         }
 
         // Mengirimkan pesan ke pengguna

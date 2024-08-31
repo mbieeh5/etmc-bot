@@ -13,22 +13,27 @@ const calculateRecommendedPrice = (pokemon) => {
 };
 
 module.exports = async (message) => {
-    const pesan = message.body;
-    const params = pesan.split(' ');
-    const param1 = parseInt(params[1]) - 1; // Nomor Pokemon yang dipilih (dalam indeks 0-based)
-    const param3 = params[1]; // Untuk handle 'tiket'
-    const pokemon = [];
-    const sanitizedSender = (message.author || message.from).replace(/[\.\@\[\]\#\$]/g, "_");
+    try {
+        const pesan = message.body;
+        const params = pesan.split(' ');
+        const param1 = parseInt(params[1]) - 1; // Nomor Pokemon yang dipilih (dalam indeks 0-based)
+        const param3 = params[1]; // Untuk handle 'tiket'
+        const pokemon = [];
+        const sanitizedSender = (message.author || message.from).replace(/[\.\@\[\]\#\$]/g, "_");
     const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
 
     if (param1 >= 0) {
         const param2 = parseInt(params[2]); // Harga jual
-
         await RefPokemon.once('value', async (snapshot) => {
             const pokemonData = snapshot.val() || {};
 
             if (Object.keys(pokemonData).length === 0) {
                 await message.reply('Inventory Pokemon kosong.');
+                return;
+            }
+
+            if(isNaN(param2)){
+                await message.reply('Masukan Harga Jual setelah nomor pokemon')
                 return;
             }
 
@@ -42,6 +47,7 @@ module.exports = async (message) => {
                 const pokemonStats = {
                     namaPokemon: pokemonInfo.namaPokemon,
                     HP: pokemonInfo.HP,
+                    MAXHP: pokemonInfo.HP,
                     ATTACK: pokemonInfo.ATTACK,
                     DEFENSE: pokemonInfo.DEFENSE,
                     SPEED: pokemonInfo.SPEED,
@@ -58,8 +64,8 @@ module.exports = async (message) => {
             const jumlahPokemon = pokemon.length;
             if (param1 < jumlahPokemon) {
                 const jualPoke = pokemon[param1];
-                const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, TYPE, harga } = jualPoke;
-
+                const { namaPokemon, HP, MAXHP, ATTACK, DEFENSE, SPEED, TYPE, harga } = jualPoke;
+                
                 // Hitung harga rekomendasi
                 const recommendedPrice = calculateRecommendedPrice(jualPoke);
 
@@ -79,7 +85,7 @@ module.exports = async (message) => {
                     pokemonList += `   - Harga: ${harga}\n`;
 
                     await message.reply(`Berhasil Menjual\n${pokemonList}`);
-
+                    
                     // Hapus Pokemon dari inventory
                     const snapshot = await RefPokemon.once('value');
                     const pokemonData = snapshot.val() || {};
@@ -96,4 +102,8 @@ module.exports = async (message) => {
     } else {
         await message.reply('Format yang benar: `!sell <nomor_pokemon> <harga>`\nContoh: `!sell 4 100000`\nAtau !sell tiket 4500');
     }
+} catch (error) {
+    console.error(`error saat menjual`, error)
+    return `Pastikan format menjual dengan benar\n!sell <noPokemon> <Harga>`
+}
 };
