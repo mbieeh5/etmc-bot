@@ -18,7 +18,7 @@ module.exports = async (message) => {
     const pokemonList = Object.keys(pokemonData).map(id => ({
       namaPokemon: pokemonData[id].namaPokemon,
       HP: pokemonData[id].HP,
-      MAXHP: pokemonData[id].HP,
+      MAXHP: pokemonData[id].MAXHP,
       ATTACK: pokemonData[id].ATTACK,
       DEFENSE: pokemonData[id].DEFENSE,
       SPEED: pokemonData[id].SPEED,

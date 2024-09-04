@@ -17,7 +17,7 @@ module.exports = async (message) => {
             const RefGacoanP2 = PokemonRef.child(NoGacoanP2).child('pokemon').child('gacoan');
             const snapshotGacoanP2 = await RefGacoanP2.once('value');
             const gacoanP2 = snapshotGacoanP2.val() || {};
-            if (gacoanP2 && gacoanP2.namaPokemon) {
+            if (gacoanP2 && gacoanP2.namaPokemon && gacoanP1 && gacoanP1.namaPokemon) {
                 fightPvP(gacoanP1, gacoanP2, Pvp, message);
                 return `Persiapan Arena!...`;
             } else {
