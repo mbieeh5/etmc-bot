@@ -1,25 +1,34 @@
 const axios = require('axios');
 const { fightAiPokemon } = require('../lib/fightAi');
 const {db} = require('../config/config');
+const {fightPvP} = require('../lib/fightPvP');
 
 const PokemonRef = db.ref('dataPengguna/pengguna');
 
 module.exports = async (message) => {
     try {
         const Pvp = message.body.split(" ")[1];
-        const sA = message.author;
-        const sender = message.from;
-        const corection = sA != undefined ? sA : sender;
-        const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+        const sanitizedSender = (message.author || message.from).replace(/[\.\@\[\]\#\$]/g, "_");
         const RefGacoan = PokemonRef.child(sanitizedSender).child('pokemon').child('gacoan');
+        const gacoanSnapshot = await RefGacoan.once('value');
+        const gacoanP1 = gacoanSnapshot.val();
         if (Pvp) {
-            return 'PVP';
+            const NoGacoanP2 = Pvp.replace(/@/g, '') + '_c_us';
+            const RefGacoanP2 = PokemonRef.child(NoGacoanP2).child('pokemon').child('gacoan');
+            const snapshotGacoanP2 = await RefGacoanP2.once('value');
+            const gacoanP2 = snapshotGacoanP2.val() || {};
+            if (gacoanP2 && gacoanP2.namaPokemon) {
+                fightPvP(gacoanP1, gacoanP2, Pvp, message);
+                return `Persiapan Arena!...`;
+            } else {
+                console.log({gacoanP1, gacoanP2, sanitizedSender})
+                message.reply(`Dia Gak Punya gacoan suruh set dulu gih\n!setgacoan <noPokedex>`);
+                return false;
+            }
         } else {
             let BOT = [];
             let P1 = [];
 
-            const gacoanSnapshot = await RefGacoan.once('value');
-            const gacoanP1 = gacoanSnapshot.val();
 
             if (gacoanP1) {
                 P1.push(gacoanP1);
@@ -46,8 +55,6 @@ module.exports = async (message) => {
                 
                 message.reply(`Musuh ditemukan\n${musuhStats}`);
                 await fightAiPokemon(P1, BOT, message);
-
-                return 'Bot Fight';
             } else {
                 message.reply('Belum ada dekingan, mending cari dulu gih !catch, kalo udah !setgacoan');
             }

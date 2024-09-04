@@ -100,7 +100,7 @@ async function handleCommand(message, client) {
         const updatePoint = async () => {
           const ss = await RefPoint.once('value');
           const poin = ss.val() || 0;
-          const pointMultiply = 50000 * dikali;
+          const pointMultiply = 5000 * dikali;
           const pinalty = await poin - pointMultiply;
           console.log({poin, pinalty, pointMultiply})
           await RefPoint.set(pinalty);
@@ -110,7 +110,7 @@ async function handleCommand(message, client) {
         const updateReputation = async () => {
           const ss = await RefRep.once('value');
           const Rep = ss.val() || 0;
-          const repMultiply = 500 * dikali;
+          const repMultiply = 50 * dikali;
           const pinalty = await Rep - repMultiply;
           await RefRep.set(pinalty);
           console.log({Rep, pinalty, repMultiply})

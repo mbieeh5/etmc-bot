@@ -45,17 +45,17 @@ module.exports = async (message) => {
             Object.keys(pokemonData).forEach((id) => {
                 const pokemonInfo = pokemonData[id];
                 const pokemonStats = {
-                    namaPokemon: pokemonInfo.namaPokemon,
-                    HP: pokemonInfo.HP,
-                    MAXHP: pokemonInfo.HP,
-                    ATTACK: pokemonInfo.ATTACK,
-                    DEFENSE: pokemonInfo.DEFENSE,
-                    SPEED: pokemonInfo.SPEED,
-                    TYPE: pokemonInfo.TYPE,
+                    namaPokemon: pokemonInfo.namaPokemon || "null",
+                    HP: pokemonInfo.HP || 0,
+                    MAXHP: pokemonInfo.HP || 0,
+                    ATTACK: pokemonInfo.ATTACK || 0,
+                    DEFENSE: pokemonInfo.DEFENSE || 0,
+                    SPEED: pokemonInfo.SPEED || 0,
+                    TYPE: pokemonInfo.TYPE || "void",
                     EXP: pokemonInfo.EXP || 0,
                     LVL: pokemonInfo.LVL || 0,
-                    harga: param2,
-                    penjual: sanitizedSender,
+                    harga: param2 || 0,
+                    penjual: sanitizedSender || "0",
                 };
 
                 pokemon.push(pokemonStats);

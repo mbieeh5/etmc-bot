@@ -19,16 +19,16 @@ module.exports = async (message) => {
         const inventory = inventorySnapshot.val() || {};
         const Potion = inventory.potion || 0;
         const Elixir = inventory.elixir || 0;
+        
+        const gacoanSnapshot = await RefGacoan.once('value');
+        const dataGacoan = gacoanSnapshot.val() || {};
+        const HP = dataGacoan.HP || 0;
+        const MaxHP = dataGacoan.MAXHP || 0;
 
         const handleHealing = async (item, itemStock, hpIncrease, maxHpUpdate) => {
             if (itemStock <= 0) {
                 return message.reply(`Item ${item} mu habis mas, beli dulu gih di market !buy ${item} 1`);
             }
-
-            const gacoanSnapshot = await RefGacoan.once('value');
-            const dataGacoan = gacoanSnapshot.val() || {};
-            const HP = dataGacoan.HP || 0;
-            const MaxHP = dataGacoan.MAXHP || 0;
             const newHP = Math.min(HP + hpIncrease, MaxHP);
 
             if (HP >= MaxHP) {
