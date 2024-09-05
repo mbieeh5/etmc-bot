@@ -21,7 +21,6 @@ module.exports = async (message) => {
                 fightPvP(gacoanP1, gacoanP2, Pvp, message);
                 return `Persiapan Arena!...`;
             } else {
-                console.log({gacoanP1, gacoanP2, sanitizedSender})
                 message.reply(`Dia Gak Punya gacoan suruh set dulu gih\n!setgacoan <noPokedex>`);
                 return false;
             }

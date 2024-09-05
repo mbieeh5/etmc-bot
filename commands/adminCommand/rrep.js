@@ -6,7 +6,7 @@ const reputasiRef = db.ref('dataPengguna/pengguna');
 module.exports = async (message) => {
     try {
         const reputasiSnapshot = await reputasiRef.once('value');
-        const reputasiPengguna = pointSnapshot.val() || {};
+        const reputasiPengguna = reputasiSnapshot.val() || {};
 
         if(pointPengguna) {
             Object.entries(reputasiPengguna).forEach(([randomkey, data]) => {

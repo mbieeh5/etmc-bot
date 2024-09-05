@@ -102,7 +102,6 @@ async function handleCommand(message, client) {
           const poin = ss.val() || 0;
           const pointMultiply = 5000 * dikali;
           const pinalty = await poin - pointMultiply;
-          console.log({poin, pinalty, pointMultiply})
           await RefPoint.set(pinalty);
           return sisaPo = pinalty.toLocaleString('id-ID');
         }
@@ -113,7 +112,6 @@ async function handleCommand(message, client) {
           const repMultiply = 50 * dikali;
           const pinalty = await Rep - repMultiply;
           await RefRep.set(pinalty);
-          console.log({Rep, pinalty, repMultiply})
           return sisaRe = pinalty.toLocaleString('id-ID');
         }
 
@@ -174,19 +172,13 @@ async function handleCommand(message, client) {
               const ResponseAdmin = await command(message);
               console.log({ResponseAdmin})
               if(ResponseAdmin){
-                
                 await client.sendMessage(message.from, ResponseAdmin);
                 if (commandName === 'bc') {
                   const messages = ResponseAdmin.message[1];
                   const daftarGroup = ResponseAdmin.dataGroup;
-              
-                  // Iterasi melalui setiap grup di daftarGroup
                   for (const group of daftarGroup) {
-                      // Kirim pesan ke setiap grup
                       await client.sendMessage(group, messages);
                   }
-              
-                  // Kamu bisa mengirim pesan konfirmasi setelah broadcast selesai, jika diperlukan
                   await client.sendMessage(message.from, `Pesan broadcast telah dikirim ke semua grup.`);
               }
               

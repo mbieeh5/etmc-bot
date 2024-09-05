@@ -15,8 +15,6 @@ module.exports = async (message) => {
         
         // Mengubah akhiran "_g_us" menjadi "@g.us"
         const convertedGroups = filteredGroups.map(groupName => groupName.replace(/_g_us$/, '@g.us'));
-        
-        console.log(convertedGroups);
         return {message: param1, dataGroup: convertedGroups};
     } catch (error) {
         console.error(`error while Broadcast message group`,error)

@@ -15,7 +15,6 @@ module.exports = async (message) => {
         
         // Cari kupon yang cocok dengan noKupon
         const foundCoupon = Object.values(redeem).find(data => data.code === noKupon);
-        console.log({foundCoupon, noKupon})
 
         // Cek apakah kupon ditemukan
         if (foundCoupon === undefined) {

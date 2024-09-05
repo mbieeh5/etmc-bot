@@ -2,7 +2,6 @@ const { db } = require('../config/config');
 
 const MarketRef = db.ref('dataData/market');
 const EtcRef = db.ref('dataData/delay');
-const ETC2Ref = db.ref('dataData').child('delay');
 const PokemonRef = db.ref('dataPengguna/pengguna');
 
 module.exports = async (message) => {

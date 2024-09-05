@@ -25,7 +25,6 @@ module.exports = async (message) => {
         const Point = pointSnapshot.val() || 0;
         const Exp = expSnapshot.val() || 0;
         const {level , rank} = getLevel(Exp);
-        console.log({level, rank, Exp})
         if (link.length === 0) {
             return 'Tidak ada link tersedia.';
         }
