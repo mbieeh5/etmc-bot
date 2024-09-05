@@ -134,6 +134,12 @@ async function handleCommand(message, client) {
             const pointPerHuruf = pesan.length * 3.00;
             const reputasiIncrement = 5;
             await updatePointsAndReputation(userRef, pointPerHuruf, reputasiIncrement);
+            if(sA){
+              const groupCor = sA ? sender : sA;
+              const sanitizedGroup = groupCor.replace(/[\.\@\[\]\#\$]/g, "_");
+              const groupRef = pointRef.child(sanitizedGroup);
+              await updatePointsAndReputation(groupRef, pointPerHuruf, reputasiIncrement)
+            }
             break;
         }
     }
@@ -148,9 +154,6 @@ async function handleCommand(message, client) {
                 console.log({Response})
                 if (Response) {
                     await client.sendMessage(message.from, Response);
-                    if (commandName === 'redeem') {
-                      await client.sendMessage(process.env.ADMIN_3, Response);
-                  }  
                 }
             } catch (error) {
                 console.error(`Error executing command ${commandName}:`, error);
@@ -158,6 +161,9 @@ async function handleCommand(message, client) {
             return;
         }
     }
+    const messageFrom = message.from;
+    const messageAuthor = message.author;
+    console.log({messageFrom, messageAuthor})
     if(pesan.startsWith('%')){
       if(sanitizedSender === process.env.ADMIN_1 || sanitizedSender === process.env.ADMIN_2){
         const commandName = pesan.substring(1).split(' ')[0];
@@ -168,7 +174,22 @@ async function handleCommand(message, client) {
               const ResponseAdmin = await command(message);
               console.log({ResponseAdmin})
               if(ResponseAdmin){
+                
                 await client.sendMessage(message.from, ResponseAdmin);
+                if (commandName === 'bc') {
+                  const messages = ResponseAdmin.message[1];
+                  const daftarGroup = ResponseAdmin.dataGroup;
+              
+                  // Iterasi melalui setiap grup di daftarGroup
+                  for (const group of daftarGroup) {
+                      // Kirim pesan ke setiap grup
+                      await client.sendMessage(group, messages);
+                  }
+              
+                  // Kamu bisa mengirim pesan konfirmasi setelah broadcast selesai, jika diperlukan
+                  await client.sendMessage(message.from, `Pesan broadcast telah dikirim ke semua grup.`);
+              }
+              
               }
           } catch (error) { 
             console.error(`error executing command ${commandName}: `, error)

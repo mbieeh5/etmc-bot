@@ -2551,7 +2551,8 @@ client.on('message', async (message) => {
     }
     if(pesan.startsWith('!market')){
       client.sendMessage(message.from, 'Di Pindahin ke sini\nhttps://www.rraf-project.site/')
-     /* const Market = [];
+     /* 
+     const Market = [];
       await MarketRef.once('value', async (snapshot) =>{
         const marketData = snapshot.val() || {};
 

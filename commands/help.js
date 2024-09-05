@@ -31,7 +31,7 @@ const commands = [
 { p: '!setgacoan <angka yang tertera pada !pokedex>', label: 'set gacoan pokemon mu dan ngadu dengan teman mu' },
 { p: '!fight <tag orangnya>', label: 'ajak temen kalian berantem pokemon, yg menang dapet 100reputasi' },
 { p: '!fight', label: 'Pokemon mu VS Bot, udah gitu aja' },
-{ p: '!redeem <Masukin nomer hp>', label: 'Redeem 102.500Point ke Pulsa All Operator Rp 10.000 (Under Develop)' },
+{ p: '!redeem <Masukin kode redeemnya>', label: 'mendapatkan hadiah dari kode redeem' },
 ];
 module.exports = async (message) => {
     let menuText = '*ETMC-BOT nih boss* \n\n';
