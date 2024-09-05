@@ -9,13 +9,14 @@
   "author": "rraf",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs-node": "^4.8.0",
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
-    "firebase": "^9.22.0",
-    "firebase-admin": "^11.8.0",
+    "firebase": "^10.12.5",
+    "firebase-admin": "^12.3.0",
+    "node-wit": "^4.0.0",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.21.0",
-    "xlsx": "^0.18.5"
+    "quote-indo": "^1.1.0",
+    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#webpack-exodus",
+    "xml2js": "^0.6.2"
   }
 }

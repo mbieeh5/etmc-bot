@@ -5,146 +5,117 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2024-09-05
+### Added
+- More readable code.
+- `!shop` command.
+- `%Multi <Number for multiply> {Only Admin Can Do This Command}`.
+- After server restart, all delays will be reset, including the absen state.
+
+### Changed
+- Auto-refill for items bought from `!shop` and others after 12:00 PM.
+- Absen function and Absen web will be set to TRUE after server restart.
+- Point & Reputation from `!Absen` can now be multiplied customly.
+- Punishment now can be multiplied customly.
+- bug less.
+
+### Moved
+- `!buy` reactivated.
+- moved all command to separated code.
+
+### Removed
+- Add Mabar & Mabar Command.
+
 
 ## [5.1.0] - 2023-06-26
 ### Changed
-- buff the !fight AI stat, before: random => random + P1[0]stat.
-- Added EXP & LVL to !sell prevent error while !buy pokemon & !setgacoan.
- 
+- Buffed the `!fight AI` stat: before random => now random + P1[0]stat.
+- Added EXP & LVL to `!sell` to prevent errors while using `!buy pokemon` & `!setgacoan`.
+- Added admin command `%AddStock` to reset potion, Training Ticket, and Elixir stock.
+- Fixed `!fight` so that MaxHP will persist across fights.
 
 ## [5.0.1] - 2023-06-25
 ### Added
-- apakah command.
+- New command `apakah`.
 
 ### Changed
-- added more notification for pokemon level Up in !fight Ai.
-- EXP system for pokemon fight PvP & AI.
+- Added more notifications for Pokemon leveling up in `!fight AI`.
+- Integrated EXP system for Pokemon fights in PvP & AI.
 
 ## [5.0.0] - 2023-06-24
 ### Added
-- Item Greatball.
-- Item Ultraball.
-- Item Masterball.
-- Item Training Ticket.
-- !lepasgacoan command.
+- New items: Greatball, Ultraball, Masterball, Training Ticket.
+- New command `!lepasgacoan`.
 
 ### Changed
-- nerf the pokeball !catch from: 80% => 50% success chance.
-- added Greatball !catch success chance 65%.
-- added Ultraball !catch success chance 85%.
-- added Masterball !catch success chance 100%.
-- !buy now add some params: !buy pokeball/Greatball/Ultraball/Masterball/TrainingTicket/pokemon.
-- Potion, Elixir, TrainingTicket now have a stock it will restock at midnight.
-- Potion get limited buy from noLimit => 30/day.
-- Elixir get limited buy from noLimit => 10/day.
-- TrainingTicket get limited 5/day.
+- Nerfed Pokeball success rate from 80% to 50% in `!catch`.
+- Greatball now has a success chance of 65%, Ultraball 85%, and Masterball 100%.
+- `!buy` command now supports buying specific items such as Pokeballs and Training Tickets.
+- Potion, Elixir, and Training Tickets now have stock limits, restocked daily.
+- Potion is limited to 30/day, Elixir to 10/day, Training Tickets to 5/day.
 
-###
-- fix !lepasgacoan that won't remove the gacoan.
-- fix !setgacoan if you already have gacoan set it will replace the gacoan before to new.
-- fix !use potion to maxHP if HP more than MaxHP
+### Fixed
+- Fixed `!lepasgacoan` not removing the gacoan.
+- Fixed `!setgacoan` not replacing the previous gacoan with a new one.
+- Fixed `!use` command, preventing HP from exceeding MaxHP.
 
 ## [4.18.18] - 2023-06-20
 ### Added
-- Leveling system for pokemon.
-- Item Potion.
-- Item Elixir.
-- HP will be decrease for each battle and save it to gacoan.
-- !use potion/elixir command.
-- added MaxHP to pokemon.
+- Leveling system for Pokemon.
+- New items: Potion and Elixir.
+- HP will now decrease for each battle and will be saved to gacoan.
+- New commands `!use potion/elixir`.
 
 ### Changed
-- added MAXHP to pokemon hp since you !catch it'll be set to HP.
-- Improve battle system for PvP added a critical chance 0.2.
+- MaxHP is now tied to Pokemon upon catching.
+- Improved battle system for PvP with a 0.2 critical hit chance.
 
 ### Fixed
-- fix use potion infinity HP to MaxHP.
-- fix HP & MAXHP if you setoff gacoan in 0 HP, it will set MaxHP to 0 too.
-- fix HP & MAXHP after battle PvP/Ai, pokemon MAXHP will be store as 0.
-
-
+- Fixed issue with infinite HP when using Potion to exceed MaxHP.
+- Fixed MaxHP inconsistencies after battle for both PvP and AI.
 
 ## [4.12.13] - 2023-06-18
-
 ### Added
-- !market command.
-- !sell command.
+- `!market` command.
+- `!sell` command.
 
 ### Changed
-- Improve !buy command from: !buy pokeball => !buy pokeball/pokemon.
+- Improved `!buy` command to support purchasing either Pokeballs or Pokemon.
 
 ### Fixed
-- fix !sell command that won't remove pokemon from pokedex.
-- fix !market mapping.
-- fix !buy pokemon that won't add point to seller and pay to buyer.
-
+- Fixed issue with `!sell` not removing Pokemon from the pokedex.
+- Fixed mapping issues with `!market` and `!buy` commands.
 
 ## [4.10.9] - 2023-06-15
-
 ### Added
-- Pokemon simple games.
-- !catch command.
-- !pokeball command.
-- !cektas command.
-- !cekgacoan command.
-- !pokedex command.
-- !setgacoan command.
-- !fight AI command.
-- !fight PvP command.
-- !buy pokeball command.
+- Simple Pokemon games.
+- Commands `!catch`, `!pokeball`, `!cektas`, `!cekgacoan`, `!pokedex`, `!setgacoan`, `!fight AI`, `!fight PvP`, `!buy pokeball`.
 
 ### Changed
-- Improve !fight AI & PvP battle system to prevent HP below 0.
+- Improved battle system to prevent HP from dropping below 0.
 
 ### Fixed
-- fix bug on !catch that pokemon status won't store in firebase.
-- fix !pokeball delay: 0 second => 60 second.
-- fix !cektas mapping array.
-- fix !cekgacoan if param1 null won't be execute anything.
-- fix !pokedex mapping.
-- fix !setgacoan to remove pokemon from pokedex and set it to gacoan database.
-
+- Fixed issues with `!catch` not saving Pokemon statuses in Firebase.
+- Fixed `!pokeball` delay to 60 seconds (previously 0).
+- Fixed array mappings for `!cektas` and `!cekgacoan`.
 
 ## [3.0.5] - 2023-06-07
 ### Added
-- !togel command.
-- !slot command.
-- !nama command.
-- !ribut command.
-- !kirim point command.
-- !stat command.
-- !pap command.
+- Commands `!togel`, `!slot`, `!nama`, `!ribut`, `!kirim point`, `!stat`, `!pap`.
 
 ### Fixed
-- fix bug on !hentai that won't send the pict.
-- fix bug on !berita that get empty array.
-- fix bug on !kirim point that won't send negative potion anymore.
-- fix !togel correction on the result and reward for winner.
-- fix !slot on the result and reward for winner & pay for not a winning.
-
+- Fixed bugs in `!hentai`, `!berita`, and `!kirim point` commands.
 
 ## [2.0.0] - 2023-06-03
 ### Added
-- Point system to each chat get randomly point 50 - 100.
-- Reputaion system to each chat get 1 Reputaion.
-- Connection to Firebase.
-- !mabar command.
-- !ping command.
-- !info cuaca command.
-- !info mabar command.
+- Point and Reputation system for each chat.
+- Firebase connection.
+- Commands `!mabar`, `!ping`, `!info cuaca`, `!info mabar`.
 
 ### Changed
-- Toxic Word get warn & got penalty -25000 Point & -100 Reputaion from database
-
+- Toxic words will now incur a penalty of -25,000 points and -100 reputation.
 
 ## [1.0.0] - 2023-06-01
 ### Added
-- Toxic Word get warn.
-- !help command.
-- !rules command.
-- !berita command.
-- !cuaca command.
-- !doa command.
-- !rate command.
-- !quotes command.
-- !hentai command.
+- Toxic word warning system.
+- Commands `!help`, `!rules`, `!berita`, `!cuaca`, `!doa`, `!rate`, `!quotes`, `!hentai`.
