@@ -76,10 +76,10 @@ module.exports = async (message) => {
                 if(isRedeemed === true){
                     return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
                 }
-                const addedPotion = pokemonInven.potion + 10
-                const addedGreatballs = pokemonInven.greatballs + 10
-                const addedelixir = pokemonInven.elixir + 5
-                const addedTT = pokemonInven.trainingTicket + 5
+                const addedPotion = pokemonInven.potion ? pokemonInven.potion + 10 : 10;
+                const addedGreatballs = pokemonInven.greatballs ? pokemonInven.greatballs + 10 : 10;
+                const addedelixir = pokemonInven.elixir ? pokemonInven.elixir + 5 : 5;
+                const addedTT = pokemonInven.trainingTicket ? pokemonInven.trainingTicket + 5 : 5;
                 const pokemonStater = {
                     potion: addedPotion,
                     greatballs: addedGreatballs,
