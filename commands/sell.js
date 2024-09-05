@@ -37,7 +37,7 @@ module.exports = async (message) => {
                 return;
             }
 
-            if (param2 < 500) {
+            if (param2 < 100) {
                 await message.reply('Harga jual harus lebih dari atau sama dengan 500.');
                 return;
             }
