@@ -2,7 +2,8 @@ const commands = [
 { p: '!berita', label: 'Berita Terkini' },
 { p: '!cuaca', label: 'Info Cuaca (Under Develop)' },
 { p: '!doa', label: 'Doa Harian' },
-{ p: '!kirim <Tag orangnya>', label: 'Kirim Point ke Teman (Under Develop)' },
+{ p: '!absen', label: 'Absen buat nambah point reputasi dan exp' },
+{ p: '!kirim <Tag orangnya> <nominal>', label: 'Kirim Point ke Teman' },
 { p: '!nama <isi nama kalian>', label: 'isi namamu di grub ini!' },
 { p: '!quotes', label: 'Apa Quotes Untuk mu?' },
 { p: '!rate', label: 'Cek Rate 1USD = Rp xx.xxx' },
@@ -20,6 +21,7 @@ const commands = [
 { p: '!pokeball', label: 'nyari pokeballs & potion, ada chance buat dapet elixir/ultraball/masterball/training ticket' },
 { p: '!cektas', label: 'cek inventory kalian' },
 { p: '!cekgacoan <tag orangnya>', label: 'ngecek gacoan lawan lu, biar ada gambaran' },
+{ p: '!training', label: 'use 1 training ticket untuk melatik gacoanmu' },
 { p: '!cekgacoan', label: 'ngecek gacoan lu sendiri' },
 { p: '!sell <angka pokemon yang tertera pada !pokedex> <harga jual>', label: 'jual pokemon mu ke market' },
 { p: '!buy <pokeball/elixir/potion> <jumlah itemsnya>', label: 'beli items dari !shop' },
@@ -34,7 +36,7 @@ const commands = [
 { p: '!redeem <Masukin kode redeemnya>', label: 'mendapatkan hadiah dari kode redeem' },
 ];
 module.exports = async (message) => {
-    let menuText = '*ETMC-BOT nih boss* \n\n';
+    let menuText = '*ETMC-BOT nih boss*\n\n';
     commands.forEach((command, index) => {
         menuText += `${index + 1}. ${command.p} - ${command.label}\n`;
     });

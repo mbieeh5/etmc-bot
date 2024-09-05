@@ -178,10 +178,10 @@ async function handleCommand(message, client) {
                   const daftarGroup = ResponseAdmin.dataGroup;
                   for (const group of daftarGroup) {
                       await client.sendMessage(group, messages);
+                      console.log({group, message})
                   }
-                  await client.sendMessage(message.from, `Pesan broadcast telah dikirim ke semua grup.`);
+                  await client.sendMessage(message.from, `Pesan broadcast telah dikirim ke semua grup.\n${ResponseAdmin.message[1]}`);
               }
-              
               }
           } catch (error) { 
             console.error(`error executing command ${commandName}: `, error)

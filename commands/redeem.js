@@ -36,6 +36,8 @@ module.exports = async (message) => {
         const reputasi = ssRep.val() || 0;
         const pokemonInven = refPokemon.val() || 0;
         const exp = ssExp.val() || 0;
+        
+        const redeemed = point + 10000
 
         // Logika berdasarkan kode kupon
         switch (noKupon) {
@@ -44,7 +46,7 @@ module.exports = async (message) => {
                     return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
                 }
                 if(point >= 0){
-                    await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
+                    await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(false);
                     return `Point Kamu tidak mines mas.`
                 }
                 await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
@@ -52,7 +54,6 @@ module.exports = async (message) => {
                 message.reply(`${foundCoupon.name} Berhasil digunakan\n${foundCoupon.desc}\nkupon berlaku 1 akun 1x redeem`);
                 break;
             case 85764660:
-                const redeemed = point + 10000
                 if(isRedeemed === true){
                     return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
                 }
@@ -65,7 +66,7 @@ module.exports = async (message) => {
                     return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
                 }
                 if(reputasi >= 0){
-                    await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
+                    await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(false);
                     return `reputasimu tidak mines mas`
                 }
                 await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
@@ -76,10 +77,10 @@ module.exports = async (message) => {
                 if(isRedeemed === true){
                     return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
                 }
-                const addedPotion = pokemonInven.potion + 10
-                const addedGreatballs = pokemonInven.greatballs + 10
-                const addedelixir = pokemonInven.elixir + 5
-                const addedTT = pokemonInven.trainingTicket + 5
+                const addedPotion = pokemonInven.potion ? pokemonInven.potion + 10 : 10;
+                const addedGreatballs = pokemonInven.greatballs ? pokemonInven.greatballs + 10 : 10;
+                const addedelixir = pokemonInven.elixir ? pokemonInven.elixir + 5 : 5;
+                const addedTT = pokemonInven.trainingTicket ? pokemonInven.trainingTicket + 5 : 5;
                 const pokemonStater = {
                     potion: addedPotion,
                     greatballs: addedGreatballs,
@@ -98,6 +99,14 @@ module.exports = async (message) => {
                 }    
                 await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
                 await penggunaRef.child('exp').set(expAdded);
+                message.reply(`${foundCoupon.name} Berhasil digunakan\n${foundCoupon.desc}\nkupon berlaku 1 akun 1x redeem`);
+                break;
+            case 70171318:
+                if(isRedeemed === true){
+                    return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
+                }
+                await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
+                await penggunaRef.child('point').set(redeemed)
                 message.reply(`${foundCoupon.name} Berhasil digunakan\n${foundCoupon.desc}\nkupon berlaku 1 akun 1x redeem`);
                 break;
             default:
