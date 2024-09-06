@@ -36,9 +36,9 @@ module.exports = async (message) => {
             return Math.floor(Math.random() * (max - min + 1)) + min;
           };
 
-        const increaseAttack = getRandomStatIncrease(10, 50);
-        const increaseDefense = getRandomStatIncrease(10, 50);
-        const increaseHP = getRandomStatIncrease(10, 50);
+        const increaseAttack = getRandomStatIncrease(20, 70);
+        const increaseDefense = getRandomStatIncrease(20, 70);
+        const increaseHP = getRandomStatIncrease(20, 70);
 
         attack += increaseAttack;
         defense += increaseDefense;

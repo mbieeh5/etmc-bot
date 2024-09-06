@@ -22,6 +22,7 @@ module.exports = async (message) => {
             const pokemon = marketData[id];
             const pokemonList = {
                 namaPokemon: pokemon.namaPokemon,
+                LVL: pokemon.LVL,
                 HP: pokemon.HP,
                 ATTACK: pokemon.ATTACK,
                 DEFENSE: pokemon.DEFENSE,
@@ -39,15 +40,16 @@ module.exports = async (message) => {
             marketList = '*Welcome To Pokemon Market*\nMarket Masih Kosong nih';
         } else {
             Market.forEach((pokemonList, index) => {
-                const { namaPokemon, HP, ATTACK, DEFENSE, SPEED, TYPE, harga } = pokemonList;
-                marketList += `${index + 1}. ${namaPokemon} (@${harga.toLocaleString('id-ID', { minimumFractionDigits: 0 })} Point)\n`;
-                marketList += `   - HP: ${HP}\n`;
-                marketList += `   - Attack  : ${ATTACK}\n`;
-                marketList += `   - Defense: ${DEFENSE}\n`;
-                marketList += `   - Speed: ${SPEED}\n`;
-                marketList += `   - Type: ${TYPE}\n`;
+                const { namaPokemon, LVL, HP, ATTACK, DEFENSE, SPEED, TYPE, harga } = pokemonList;
+                marketList += ` ${index + 1}. ${namaPokemon} (@${harga.toLocaleString('id-ID', { minimumFractionDigits: 0 })} Point)\n`;
+                marketList += `- HP: ${HP}\n`;
+                marketList += `- Level: ${LVL}\n`;
+                marketList += `- Attack  : ${ATTACK}\n`;
+                marketList += `- Defense: ${DEFENSE}\n`;
+                marketList += `- Speed: ${SPEED}\n`;
+                marketList += `- Type: ${TYPE}\n`;
             });
-            marketList = `*Welcome To Pokemon Shop*\n1. Potion (@${Potion.harga} Point): ${Potion.stock}\n2. Elixir (@${Elixir.harga} Point): ${Elixir.stock}\n3. Pokeballs (@${Pokeballs.harga} Point): ${Pokeballs.stock}\n4. Greatballs (@${TrainingTicket.harga} Point): ${Greatballs.stock}\n5. Ultraballs (@${Ultraballs.harga} Point): ${Ultraballs.stock}\n6. Masterballs (@${Masterballs.harga} Point): ${Masterballs.stock}\n7. Training Ticket (@${TrainingTicket.harga} Point): ${TrainingTicket.stock}\nItem di atas bertambah Setiap Malam\n*POKEMON*\n${marketList}`;
+            marketList = `*Welcome To Pokemon Shop*\n1. Potion (@${Potion.harga} Point): ${Potion.stock}\n2. Elixir (@${Elixir.harga} Point): ${Elixir.stock}\n3. Pokeballs (@${Pokeballs.harga} Point): ${Pokeballs.stock}\n4. Greatballs (@${Greatballs.harga} Point): ${Greatballs.stock}\n5. Ultraballs (@${Ultraballs.harga} Point): ${Ultraballs.stock}\n6. Masterballs (@${Masterballs.harga} Point): ${Masterballs.stock}\n7. Training Ticket (@${TrainingTicket.harga} Point): ${TrainingTicket.stock}\nItem di atas bertambah Setiap Malam\n*POKEMON*\n${marketList}`;
         }
 
         // Mengirimkan pesan ke pengguna

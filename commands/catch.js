@@ -9,7 +9,7 @@ module.exports = async (message) => {
     const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
     const RefInven = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory');
     const param1 = message.body.split(' ')[1] || 'pokeball';
-    
+
     const snapshot = await RefPokemon.once('value');
     const pokemonData = snapshot.val() || {};
     const pokemonCount = Object.keys(pokemonData).length;
@@ -33,10 +33,10 @@ module.exports = async (message) => {
     };
 
     const ballTypes = {
-      pokeball: { chance: 0.5, label: "Pokeball" },
-      greatball: { chance: 0.65, label: "Greatball" },
-      ultraball: { chance: 0.85, label: "Ultraball" },
-      masterball: { chance: 1, label: "Masterball" },
+      pokeball: { chance: 0.3, label: "Pokeball", bonus: 0 },
+      greatball: { chance: 0.55, label: "Greatball", bonus: 10 },
+      ultraball: { chance: 0.85, label: "Ultraball", bonus: 50 },
+      masterball: { chance: 1, label: "Masterball", bonus: 100 },
     };
 
     if (!ballTypes[param1]) {
@@ -57,20 +57,30 @@ module.exports = async (message) => {
       const pokeData = await axios.get(randomPoke.url);
       const stats = pokeData.data.stats;
       const types = pokeData.data.types.map(type => type.type.name.toUpperCase()).join(', ');
-      
+
+      // Tambahkan bonus stat sesuai bola yang digunakan
+      const HP = stats[0].base_stat + selectedBall.bonus;
+      const MAXHP = stats[0].base_stat + selectedBall.bonus;
+      const ATTACK = stats[1].base_stat + selectedBall.bonus;
+      const DEFENSE = stats[2].base_stat + selectedBall.bonus;
+      const SPEED = stats[5].base_stat + selectedBall.bonus;
+      const LVL = 0;
+      const EXP = 0;
+      const TYPE = types;
+
       await RefPokemon.push({
-          namaPokemon: randomPoke.name.toUpperCase(),
-          HP: stats[0].base_stat,
-          MAXHP: stats[0].base_stat,
-          ATTACK: stats[1].base_stat,
-          DEFENSE: stats[2].base_stat,
-          SPEED: stats[5].base_stat,
-          LVL: 0,
-          EXP: 0,
-          TYPE: types,
+        namaPokemon: randomPoke.name.toUpperCase(),
+        HP,
+        MAXHP,
+        ATTACK,
+        DEFENSE,
+        SPEED,
+        LVL,
+        EXP,
+        TYPE
       });
 
-      return message.reply(`*${randomPoke.name.toUpperCase()}*\nSTATUS:\n${stats[0].stat.name.toUpperCase()}: ${stats[0].base_stat}\n${stats[1].stat.name.toUpperCase()}: ${stats[1].base_stat}\n${stats[2].stat.name.toUpperCase()}: ${stats[2].base_stat}\n${stats[5].stat.name.toUpperCase()}: ${stats[5].base_stat}\n\nPokemon Type: ${types}.`);
+      return message.reply(`*${randomPoke.name.toUpperCase()}*\nSTATUS:\nHP: ${HP}\nATTACK: ${ATTACK}\nDEFENSE: ${DEFENSE}\nSPEED: ${SPEED}\n\nPokemon Type: ${types}.`);
     } else {
       return message.reply('WAKOAWOKAW Pokemonnya kabur!');
     }

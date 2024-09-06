@@ -109,6 +109,26 @@ module.exports = async (message) => {
                 await penggunaRef.child('point').set(redeemed)
                 message.reply(`${foundCoupon.name} Berhasil digunakan\n${foundCoupon.desc}\nkupon berlaku 1 akun 1x redeem`);
                 break;
+            case 48849710:
+                if(isRedeemed === true){
+                    return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
+                }
+                await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
+                await penggunaRef.child('point').set(point + 666)
+                await penggunaRef.child('reputasi').set(reputasi + 75)
+                await penggunaRef.child('exp').set(exp + 215)
+                message.reply(`${foundCoupon.name} Berhasil digunakan\n${foundCoupon.desc}\nkupon berlaku 1 akun 1x redeem`);
+                break;
+            case 10311171:
+                if(isRedeemed === true){
+                    return `Kamu sudah meredeem ${foundCoupon.name} sebelumnya`
+                }
+                await penggunaRef.child('redeem').child(foundCoupon.name).child('isRedeem').set(true);
+                await penggunaRef.child('point').set(point + 5000)
+                await penggunaRef.child('reputasi').set(reputasi + 125)
+                await penggunaRef.child('exp').set(exp + 215)
+                message.reply(`${foundCoupon.name} Berhasil digunakan\n${foundCoupon.desc}\nkupon berlaku 1 akun 1x redeem`);
+                break;
             default:
                 return 'No Kupon Tidak Tersedia/Tidak Valid 2 ';
         }

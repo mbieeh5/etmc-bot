@@ -44,7 +44,7 @@ module.exports = async (message) => {
       const PointFinal = randomPoint * diKali;
       const pointAbsen = point + PointFinal;
 
-      const ExpFinal = 5 * diKali;
+      const ExpFinal = 12 * diKali;
       const ExpAbsen = exp + ExpFinal;
 
       // Menyimpan data ke Firebase
