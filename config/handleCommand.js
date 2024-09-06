@@ -50,7 +50,7 @@ const updatePointsAndReputation = async (userRef, pointPerHuruf, reputasiIncreme
 
   const newPoint = currentPoint + (pointPerHuruf === 0 ? 1 : Math.min(pointPerHuruf, 511));
   const newReputasi = currentReputasi + reputasiIncrement;
-  const newExp = currentExp + 1;
+  const newExp = currentExp + 10;
 
   await userRef.child('point').set(newPoint);
   await userRef.child('reputasi').set(newReputasi);

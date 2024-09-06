@@ -6,36 +6,46 @@ Make your whatsapp group/chat more intresting and playable.
 if one of person say the toxic sentence it will trigger the point system then reduce Point & Reputation by multiplication Admin Set. each alphabet carry 1 point limited to 300++ alphabet, and each chat you send that carry 5 reputaion & 1Exp. since the reputaion (-) you will get the personality `BOCAH TOXIC` that mean you the toxic person in the group.
 
 `TIER LIST`
-- Reputaion <= 0 {💀BOCAH TOXIC💀}
-- Reputaion <= 10 {_Bronze_}
-- Reputaion <= 20 {_Silver_}
-- Reputaion <= 30 {_Gold_}
-- Reputaion <= 40 {_Platinum_}
-- Reputaion <= 100 {💎_Diamond_💎}
-- Reputaion <= 200 {♚_CROWN_♚}
-- Reputaion <= 500 {⭐_ACE_⭐}
-- Reputaion <= 666 {S0N-0F-S4TAN}
-- Reputaion <= 1000 {🔥_CONQUEROR_🔥}
-- Reputaion >= 2000 {--👑GOD👑--}
-- Reputaion Else {Anak💀Haram}
+- Karamahan <= 0 {💀BOCAH TOXIC💀}
+- Karamahan <= 10 {_Bronze_}
+- Karamahan <= 20 {_Silver_}
+- Karamahan <= 30 {_Gold_}
+- Karamahan <= 40 {_Platinum_}
+- Karamahan <= 100 {💎_Diamond_💎}
+- Karamahan <= 200 {♚_CROWN_♚}
+- Karamahan <= 500 {⭐_ACE_⭐}
+- Karamahan <= 666 {S0N-0F-S4TAN}
+- Karamahan <= 1000 {🔥_CONQUEROR_🔥}
+- Karamahan >= 2000 {--👑GOD👑--}
+- Karamahan Else {Anak💀Haram}
 
 
 `!NEW EXP SYSTEM`
--   (level <= 10) 'Rookie🧑';
--   (level <= 20)  'Apprentice👨‍🎓';
--   (level <= 30)  'Warrior⚔️';
--   (level <= 40)  'Knight🛡️';
--   (level <= 50)  'Paladin🏅';
--   (level <= 60)  'Champion🏆';
--   (level <= 70)  'Master👑';
--   (level <= 80)  'Grandmaster🌟';
--   (level <= 90)  'Legend💫';
--   (level <= 100)  'Mythic🚀';
+- (level <= 5)  'Rookie🧑';
+- (level <= 10)  'Apprentice👨‍🎓';
+- (level <= 15) 'Warrior⚔️';
+- (level <= 20) 'Knight🛡️';
+- (level <= 25) 'Paladin🏅';
+- (level <= 30) 'Champion🏆';
+- (level <= 35) 'Master👑';
+- (level <= 40) 'Grandmaster🌟';
+- (level <= 45) 'Legend💫';
+- (level <= 50) 'Mythic🚀';
+- (level <= 55) 'Hero🎖️';
+- (level <= 60) 'Guardian🛡️';
+- (level <= 65) 'Savior👼';
+- (level <= 70) 'Immortal🔥';
+- (level <= 75) 'Divine✨';
+- (level <= 80) 'Titan⚡';
+- (level <= 85) 'Godlike💥';
+- (level <= 90) 'Supreme☄️';
+- (level <= 95) 'Ascendant💎';
+- (level <= 100) 'Celestial🚀';
 
 ##The !stat will return :
 
     MyName is
-    - Level: 99 (Legend💫)
+    - Level: 99 (Ascendant💎)
     - Keramahan: --👑GOD👑--
     - Point Kamu: 9.999.999
     - Reputasi: 9.999.999

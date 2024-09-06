@@ -7,9 +7,11 @@ const calculateRecommendedPrice = (pokemon) => {
     const levelMultiplier = 100;
 
     const recommendedPrice = basePrice + (pokemon.LVL * levelMultiplier);
-
-    const typeBonus = pokemon.TYPE === 'Legendary' ? 5000 : 0;
-    return recommendedPrice + typeBonus;
+    
+    const hpBonus = pokemon.MAXHP;
+    const expBonus = pokemon.EXP;
+    const typeBonus = pokemon.TYPE === 'Legendary' ? 5000 : 300;
+    return recommendedPrice + typeBonus + hpBonus + expBonus;
 };
 
 module.exports = async (message) => {
@@ -20,7 +22,8 @@ module.exports = async (message) => {
         const param3 = params[1]; // Untuk handle 'tiket'
         const pokemon = [];
         const sanitizedSender = (message.author || message.from).replace(/[\.\@\[\]\#\$]/g, "_");
-    const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
+        const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
+        const RefPoint = PokemonRef.child(sanitizedSender).child('point');
 
     if (param1 >= 0) {
         const param2 = parseInt(params[2]); // Harga jual
@@ -64,7 +67,7 @@ module.exports = async (message) => {
             const jumlahPokemon = pokemon.length;
             if (param1 < jumlahPokemon) {
                 const jualPoke = pokemon[param1];
-                const { namaPokemon, HP, MAXHP, ATTACK, DEFENSE, SPEED, TYPE, harga } = jualPoke;
+                const { namaPokemon, HP, MAXHP, ATTACK, DEFENSE, SPEED, LVL, TYPE, harga } = jualPoke;
                 
                 // Hitung harga rekomendasi
                 const recommendedPrice = calculateRecommendedPrice(jualPoke);
@@ -73,25 +76,35 @@ module.exports = async (message) => {
                 if (harga > recommendedPrice) {
                     await message.reply(`Kamu menjual terlalu mahal, silahkan jual dengan harga di bawah dari ${recommendedPrice}.`);
                 } else {
-                    await MarketRef.push(jualPoke);
-
                     let pokemonList = '';
                     pokemonList += `Nama: ${namaPokemon}\n`;
-                    pokemonList += `   - HP: ${HP}\n`;
+                    pokemonList += `   - HP: ${MAXHP}\n`;
                     pokemonList += `   - Attack: ${ATTACK}\n`;
                     pokemonList += `   - Defense: ${DEFENSE}\n`;
                     pokemonList += `   - Speed: ${SPEED}\n`;
                     pokemonList += `   - Type: ${TYPE}\n`;
                     pokemonList += `   - Harga: ${harga}\n`;
+                    if(LVL > 5){
+                        await MarketRef.push(jualPoke);
+                        
+                        await message.reply(`Berhasil Menjual\n${pokemonList}`);
+                        
+                        const pokemonKeys = Object.keys(pokemonData);
+                        const pokemonIdToDelete = pokemonKeys[param1];
+                        await RefPokemon.child(pokemonIdToDelete).remove();
+                    }else{
+                        const ssPoint = await RefPoint.once('value');
+                        const point = ssPoint.val() || 0;
+                        await RefPoint.set(point + harga)
 
-                    await message.reply(`Berhasil Menjual\n${pokemonList}`);
-                    
-                    // Hapus Pokemon dari inventory
-                    const snapshot = await RefPokemon.once('value');
-                    const pokemonData = snapshot.val() || {};
-                    const pokemonKeys = Object.keys(pokemonData);
-                    const pokemonIdToDelete = pokemonKeys[param1];
-                    await RefPokemon.child(pokemonIdToDelete).remove();
+                        await message.reply(`Berhasil Menjual\n${pokemonList}`);
+
+                        const snapshot = await RefPokemon.once('value');
+                        const pokemonData = snapshot.val() || {};
+                        const pokemonKeys = Object.keys(pokemonData);
+                        const pokemonIdToDelete = pokemonKeys[param1];
+                        await RefPokemon.child(pokemonIdToDelete).remove();
+                    }
                 }
             } else {
                 await message.reply(`Nomor Pokémon tidak valid. Pilih nomor antara 1 dan ${jumlahPokemon}.`);

@@ -38,7 +38,7 @@ module.exports = async (message) => {
         if (Point > 50000) {
             // Mengambil media dari URL
             if(level < 5){
-                return `Kamu masih Level : ${level},\nsilahkan rajin chat di grub biar cepet naik level`
+                return `Kamu masih Level : ${level},\nsilahkan rajin chat di grub biar cepet naik level 5`
             }else{
                 const BayarPap = Point - pengurangan;
                 await RefPoint.set(BayarPap);
