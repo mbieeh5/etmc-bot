@@ -9,6 +9,7 @@
   "author": "rraf",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.17.2",
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
     "firebase": "^10.12.5",

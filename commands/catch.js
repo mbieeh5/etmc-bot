@@ -8,14 +8,14 @@ module.exports = async (message) => {
     const sanitizedSender = (message.author || message.from).replace(/[\.\@\[\]\#\$]/g, "_");
     const RefPokemon = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory').child('pokemon');
     const RefInven = PokemonRef.child(sanitizedSender).child('pokemon').child('inventory');
-    const param1 = message.body.split(' ')[1] || 'pokeball';
+    const param1 = message.body.split(' ')[1] || 'pokeballs';
 
     const snapshot = await RefPokemon.once('value');
     const pokemonData = snapshot.val() || {};
     const pokemonCount = Object.keys(pokemonData).length;
 
     if (pokemonCount > 25) {
-      return message.reply('Pokedex kamu sudah penuh\nhapus(!dismiss <nomor Pokedex>)\natau\njual salah satu Pokemon(!sell <nomor Pokedex> <harga>).');
+      return 'Pokedex kamu sudah penuh\nhapus(!dismiss <nomor Pokedex>)\natau\njual salah satu Pokemon(!sell <nomor Pokedex> <harga>).';
     }
 
     const resp = await axios.get(`https://pokeapi.co/api/v2/pokemon/?offset=0&limit=2200`);
@@ -26,17 +26,17 @@ module.exports = async (message) => {
     const inventorySnapshot = await RefInven.once('value');
     const inventory = inventorySnapshot.val() || {};
     const balls = {
-      pokeball: inventory.pokeballs || 0,
-      greatball: inventory.greatballs || 0,
+      pokeballs: inventory.pokeballs || 0,
+      greatballs: inventory.greatballs || 0,
       ultraball: inventory.ultraball || 0,
       masterball: inventory.masterball || 0,
     };
 
     const ballTypes = {
-      pokeball: { chance: 0.3, label: "Pokeball", bonus: 0 },
-      greatball: { chance: 0.55, label: "Greatball", bonus: 10 },
-      ultraball: { chance: 0.85, label: "Ultraball", bonus: 50 },
-      masterball: { chance: 1, label: "Masterball", bonus: 100 },
+      pokeballs: { chance: 0.3, label: "pokeballs", bonus: 0 },
+      greatballs: { chance: 0.55, label: "greatballs", bonus: 10 },
+      ultraball: { chance: 0.85, label: "ultraball", bonus: 50 },
+      masterball: { chance: 1, label: "masterball", bonus: 100 },
     };
 
     if (!ballTypes[param1]) {
@@ -80,12 +80,12 @@ module.exports = async (message) => {
         TYPE
       });
 
-      return message.reply(`*${randomPoke.name.toUpperCase()}*\nSTATUS:\nHP: ${HP}\nATTACK: ${ATTACK}\nDEFENSE: ${DEFENSE}\nSPEED: ${SPEED}\n\nPokemon Type: ${types}.`);
+      return `*${randomPoke.name.toUpperCase()}*\nSTATUS:\nHP: ${HP}\nATTACK: ${ATTACK}\nDEFENSE: ${DEFENSE}\nSPEED: ${SPEED}\n\nPokemon Type: ${types}.`;
     } else {
-      return message.reply('WAKOAWOKAW Pokemonnya kabur!');
+      return 'WAKOAWOKAW Pokemonnya kabur!';
     }
   } catch (err) {
     console.error(err);
-    return message.reply('Terjadi kesalahan saat mencoba menangkap Pokemon.');
+    return 'Terjadi kesalahan saat mencoba menangkap Pokemon.';
   }
 };

@@ -3,7 +3,7 @@ const xml2js = require('xml2js');
 
 module.exports = async (message) => {
   try {
-    const resp = await axios.get('https://data.bmkg.go.id/DataMKG/MEWS/DigitalForecast/DigitalForecast-JawaBarat.xml');
+    /*const resp = await axios.get('https://data.bmkg.go.id/DataMKG/MEWS/DigitalForecast/DigitalForecast-JawaBarat.xml');
     const dataCuacaXML = resp.data;
 
     // Parsing XML to JavaScript object
@@ -17,7 +17,8 @@ module.exports = async (message) => {
     
     const balasan = `Cuaca di Cibinong:\nSuhu: ${suhuTerbaru}°C`;
 
-    return balasan;
+    return balasan;*/
+    return 'Error while fetching data';
   } catch (error) {
     console.error('Error while fetching or parsing data:', error);
     return 'Error while fetching data';

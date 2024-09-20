@@ -5,10 +5,7 @@ module.exports = async (message) => {
         const kataKunci = (message.body).split(' ')[1].trim();
         const resp = await axios.get(`https://id.wikipedia.org/api/rest_v1/page/summary/${kataKunci}`)
         const datas = resp.data.extract;
-        const jumlahKata = 26;
-        const hasil = datas.split(" ");
-        const kataPotong = hasil.slice(0, jumlahKata);
-        const balasan = kataPotong.join(" ")
+        const balasan = datas
             if(datas){
                 return balasan;
             }else {

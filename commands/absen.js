@@ -62,7 +62,7 @@ module.exports = async (message) => {
       return `Absen berhasil\npoint: +${PointFinal} x${diKali}.00\nReputasi: +${repFinal} x${diKali}.00\nEXP: +${ExpFinal} x${diKali}`;
 
     } else if (absen === true) {
-      return 'Kamu sudah absen hari ini';
+      return 'Kamu sudah absen tadi';
     } else {
         await RefAbsen.set(false);
         return `!absen lagi cuy`;
