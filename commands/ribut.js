@@ -57,7 +57,7 @@ module.exports = async (message) => {
 
         // Random line 3
         const line3 = [
-            `Pihak ${p2} pun tidak terima habis disepongin oleh ${p1}.`,
+            `Pihak ${p2} pun tidak terima dihabis oleh ${p1}.`,
             `GOKIL! ${p1} mencium lawannya dengan keras!`,
             `Pertarungan yang sangat sengit terjadi antara ${p1} dengan ${p2}.`,
             `Tak terima dengan perlakuan ${p1}, ${p2} mengamuk!`,

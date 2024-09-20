@@ -55,13 +55,13 @@ module.exports = async (message) => {
 
             const isWinning = isWinningCombination(result);
 
-            let multiplier = 10; // Rating pengalian default 10%
+            let multiplier = 5; // Rating pengalian default 10%
             if (isWinning) {
-                multiplier = Math.floor(Math.random() * multiplier); // Admin tetap 10% dari total kemenangan
+                multiplier = Math.floor(Math.random() * multiplier) + 1; // Admin tetap 10% dari total kemenangan
             }
 
             if (isWinning) {
-                const winAmountFix = 10000
+                const winAmountFix = 5000
                 const winAmount = isAdmin ? winAmountFix * 10 : winAmountFix * multiplier;
                 await RefPoint.set(poin + winAmount);
                 await message.reply(`Wihh menang! Kamu mendapatkan ${winAmount} point.`);

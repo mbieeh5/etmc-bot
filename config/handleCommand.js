@@ -1,7 +1,7 @@
 const db = require('./config').db;
 const path = require('path')
 const fs = require('fs');
-
+const {preventSpam} =  require('../lib/antiSpam');
 const kataTerlarang = [
   /\banjg\b/i, /\bajg\b/i, /\banal\b/i, /\basu\b/i, /\bass\b/i, /\banjing\b/i, /\banjeng\b/i, /\bbajingan\b/i,
   /\bbgst\b/i, /\bbangsat\b/i, /\bbabi\b/i, /\bcuk\b/i, /\bcok\b/i, /\bcukimai\b/i, /\bdancok\b/i, /\bdancuk\b/i,
@@ -10,7 +10,7 @@ const kataTerlarang = [
   /\bkimak\b/i, /\bler\b/i, /\bmemek\b/i, /\bmek\b/i, /\bmmk\b/i, /\bmeki\b/i, /\bngen\b/i, /\bngentot\b/i,
   /\bnigga\b/i, /\bni99a\b/i, /\bnenen\b/i, /\bpantek\b/i, /\bpanteq\b/i, /\bpntek\b/i, /\bpntk\b/i, /\bpler\b/i,
   /\bpepek\b/i, /\bpendo\b/i, /\bppk\b/i, /\bpuki\b/i, /\bpukimak\b/i, /\bpentek\b/i, /\bpukima\b/i, /\bsu\b/i,
-  /\bsange\b/i, /\bsagne\b/i, /\bsat\b/i, /\btot\b/i, /\btod\b/i, /\btolol\b/i, /\btll\b/i, /\bttt\b/i, /\btitit\b/i,
+  /\bsange\b/i, /\bsagne\b/i, /\bsat\b/i, /\btot\b/i, /\btolol\b/i, /\btll\b/i, /\bttt\b/i, /\btitit\b/i,
   /\btai\b/i, /\btod\b/i
 ];
 
@@ -122,21 +122,29 @@ async function handleCommand(message, client) {
         })
       }else{
         if (!point[corection]) point[corection] = 0;
-    if (!reputasi[corection]) reputasi[corection] = 0;
-
-    const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
-    const userRef = pointRef.child(sanitizedSender);
-    
-    for (const threshold of thresholds) {
+        if (!reputasi[corection]) reputasi[corection] = 0;
+        const sanitizedSender = corection.replace(/[\.\@\[\]\#\$]/g, "_");
+        const userRef = pointRef.child(sanitizedSender);
+        for (const threshold of thresholds) {
         if (point[corection] >= threshold || reputasi[corection] >= threshold) {
             const pointPerHuruf = pesan.length * 3.00;
             const reputasiIncrement = 5;
-            await updatePointsAndReputation(userRef, pointPerHuruf, reputasiIncrement);
+            if(preventSpam(sanitizedSender, pesan)){
+              //message.reply('Spam detected, exp/point/reputation will not be updated.')
+              console.error(`Spam detected, exp/point/reputation will not be updated.`)
+            }else {
+              await updatePointsAndReputation(userRef, pointPerHuruf, reputasiIncrement);
+            }
             if(sA){
               const groupCor = sA ? sender : sA;
               const sanitizedGroup = groupCor.replace(/[\.\@\[\]\#\$]/g, "_");
               const groupRef = pointRef.child(sanitizedGroup);
-              await updatePointsAndReputation(groupRef, pointPerHuruf, reputasiIncrement)
+              if(preventSpam(sanitizedSender, pesan)){
+                //message.reply('Spam detected, exp/point/reputation will not be updated.')
+                console.error(`Spam detected, exp/point/reputation will not be updated.`)
+              }else{
+                await updatePointsAndReputation(groupRef, pointPerHuruf, reputasiIncrement)
+              }
             }
             break;
         }

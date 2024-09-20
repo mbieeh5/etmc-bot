@@ -24,6 +24,7 @@ module.exports = async (message) => {
                 namaPokemon: pokemon.namaPokemon,
                 LVL: pokemon.LVL,
                 HP: pokemon.HP,
+                MAXHP: pokemon.MAXHP,
                 ATTACK: pokemon.ATTACK,
                 DEFENSE: pokemon.DEFENSE,
                 SPEED: pokemon.SPEED,
@@ -40,9 +41,9 @@ module.exports = async (message) => {
             marketList = '*Welcome To Pokemon Market*\nMarket Masih Kosong nih';
         } else {
             Market.forEach((pokemonList, index) => {
-                const { namaPokemon, LVL, HP, ATTACK, DEFENSE, SPEED, TYPE, harga } = pokemonList;
+                const { namaPokemon, LVL, MAXHP, HP, ATTACK, DEFENSE, SPEED, TYPE, harga } = pokemonList;
                 marketList += ` ${index + 1}. ${namaPokemon} (@${harga.toLocaleString('id-ID', { minimumFractionDigits: 0 })} Point)\n`;
-                marketList += `- HP: ${HP}\n`;
+                marketList += `- HP: ${MAXHP}\n`;
                 marketList += `- Level: ${LVL}\n`;
                 marketList += `- Attack  : ${ATTACK}\n`;
                 marketList += `- Defense: ${DEFENSE}\n`;
