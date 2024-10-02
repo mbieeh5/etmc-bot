@@ -39,13 +39,12 @@ module.exports = async (message) => {
         return "Tag mengandung karakter tidak valid.";
       }
     
-      console.log(Tag);
       const validTag = Tag + "_c_us";
       const RefAbsenTag = pointRef.child(validTag).child('absen');
       const RefPointTag = pointRef.child(validTag).child('point');
       const RefRepTag = pointRef.child(validTag).child('reputasi');
       const RefExpTag = pointRef.child(validTag).child('exp');
-    
+      
       try {
         // Ambil semua data dari Firebase secara paralel
         const [absenSnapshotT, reputasiSnapshotT, pointSnapshotT, expSnapshotT] = await Promise.all([
@@ -54,20 +53,23 @@ module.exports = async (message) => {
           RefPointTag.once('value'),
           RefExpTag.once('value')
         ]);
-    
+        
         // Cek apakah snapshot memiliki nilai (tidak null)
         const absenTag = absenSnapshotT.val();
         const reputasiTag = reputasiSnapshotT.val();
         const pointTag = pointSnapshotT.val();
         const expTag = expSnapshotT.val();
-    
+        
+        
+        console.log({Tag, validTag, absenTag});
+
         // Jika tidak ada data (snapshot kosong), kembalikan pesan bahwa user sudah absen
-        if (absenTag === null || reputasiTag === null || pointTag === null || expTag === null) {
+        if (absenTag === null) {
           return "Dia sudah absen.";
         }
     
         // Cek apakah user belum absen
-        if (absen === false && absen !== null) {
+        if (absen === false) {
           const reputasiT = reputasiTag || 0;
           const minRep = 20;
           const maxRep = 40;
