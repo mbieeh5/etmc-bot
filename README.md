@@ -101,6 +101,10 @@ The pokemon system updated improve !fight with AI and !fight @someone / PVP syst
 -----NSFW Section-----
 - `!pap` = minimum level 5 and point 50K++
 
+## Test Bot
+- [ID Language](https://wa.me/6287747140414)
+- EN Language Coming Soon
+
 ## Support Me
 
 - Send me feedback:  rrap5@outlook.com
