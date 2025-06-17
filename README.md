@@ -107,7 +107,7 @@ The pokemon system updated improve !fight with AI and !fight @someone / PVP syst
 
 ## Support Me
 
-- Send me feedback:  rrap5@outlook.com
+- Send me feedback:  rraf@rrafproject.com
 - Saweria? : https://saweria.co/rrap
 
 
